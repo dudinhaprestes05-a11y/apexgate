@@ -6,14 +6,6 @@ $newApiSecret = $_SESSION['new_api_secret'] ?? null;
 $newApiKey = $_SESSION['new_api_key'] ?? null;
 unset($_SESSION['new_api_secret']);
 unset($_SESSION['new_api_key']);
-
-if (APP_ENV === 'development' && $newApiSecret) {
-    error_log('=== DISPLAYING NEW CREDENTIALS ===');
-    error_log('Session API Secret: ' . $newApiSecret);
-    error_log('Session API Key: ' . ($newApiKey ?? 'NOT SET'));
-    error_log('DB API Key: ' . $seller['api_key']);
-    error_log('Keys match: ' . (($newApiKey === $seller['api_key']) ? 'YES' : 'NO'));
-}
 ?>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -30,19 +22,6 @@ if (APP_ENV === 'development' && $newApiSecret) {
                 <h3 class="font-semibold text-yellow-900">Atenção! Salve suas novas credenciais</h3>
                 <p class="text-yellow-700 text-sm mt-1">Copie e guarde em local seguro, pois não serão mostradas novamente!</p>
 
-                <?php if ($newApiKey): ?>
-                <div class="mt-3">
-                    <label class="block text-xs font-medium text-yellow-800 mb-1">Novo API Key:</label>
-                    <div class="p-3 bg-white rounded border border-yellow-300 flex items-center justify-between">
-                        <code class="text-sm text-gray-900 break-all"><?= htmlspecialchars($newApiKey) ?></code>
-                        <button onclick="copyToClipboard('<?= htmlspecialchars($newApiKey) ?>', this)"
-                                class="ml-2 px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-xs">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                </div>
-                <?php endif; ?>
-
                 <div class="mt-3">
                     <label class="block text-xs font-medium text-yellow-800 mb-1">Novo API Secret:</label>
                     <div class="p-3 bg-white rounded border border-yellow-300 flex items-center justify-between">
@@ -53,15 +32,6 @@ if (APP_ENV === 'development' && $newApiSecret) {
                         </button>
                     </div>
                 </div>
-
-                <?php if (APP_ENV === 'development'): ?>
-                <div class="mt-3 p-2 bg-gray-100 rounded text-xs">
-                    <strong>Debug Info:</strong><br>
-                    Secret Length: <?= strlen($newApiSecret) ?> chars<br>
-                    Hash (SHA256): <?= hash('sha256', $newApiSecret) ?><br>
-                    DB Hash: <?= $seller['api_secret'] ?>
-                </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -92,7 +62,6 @@ if (APP_ENV === 'development' && $newApiSecret) {
                            class="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
                     <span class="text-sm text-gray-500">Oculto por segurança</span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">O API Secret nunca é exibido após a criação inicial. Use o hash SHA256 dele para autenticação HMAC.</p>
             </div>
         </div>
     </div>
@@ -128,11 +97,12 @@ if (APP_ENV === 'development' && $newApiSecret) {
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Exemplo de Uso</h2>
-        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Exemplos de Uso</h2>
+
+        <h3 class="font-semibold text-gray-800 mb-2">Método 1: Basic Authentication (Recomendado)</h3>
+        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto mb-4">
             <pre class="text-green-400 text-sm"><code>curl -X POST <?= BASE_URL ?>/api/pix/create \
-  -H "X-Api-Key: <?= htmlspecialchars($seller['api_key']) ?>" \
-  -H "X-Signature: {HMAC-SHA256}" \
+  -u "<?= htmlspecialchars($seller['api_key']) ?>:SEU_API_SECRET" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100.00,
@@ -142,6 +112,29 @@ if (APP_ENV === 'development' && $newApiSecret) {
       "document": "12345678900"
     }
   }'</code></pre>
+        </div>
+
+        <h3 class="font-semibold text-gray-800 mb-2">Método 2: Headers Personalizados</h3>
+        <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-green-400 text-sm"><code>curl -X POST <?= BASE_URL ?>/api/pix/create \
+  -H "X-API-Key: <?= htmlspecialchars($seller['api_key']) ?>" \
+  -H "X-API-Secret: SEU_API_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100.00,
+    "external_id": "ORDER-123",
+    "customer": {
+      "name": "João Silva",
+      "document": "12345678900"
+    }
+  }'</code></pre>
+        </div>
+
+        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <p class="text-sm text-blue-800">
+                <i class="fas fa-info-circle mr-1"></i>
+                <strong>Importante:</strong> Substitua "SEU_API_SECRET" pelo secret mostrado após regenerar as credenciais.
+            </p>
         </div>
     </div>
 </div>
