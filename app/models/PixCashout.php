@@ -223,4 +223,29 @@ class PixCashout extends BaseModel {
 
         return $stmt->fetch();
     }
+
+    public function getBySeller($sellerId, $status = '', $limit = 20, $offset = 0) {
+        $params = [$sellerId];
+        $whereClause = 'seller_id = ?';
+
+        if (!empty($status)) {
+            $whereClause .= ' AND status = ?';
+            $params[] = $status;
+        }
+
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE {$whereClause}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        ";
+
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }
