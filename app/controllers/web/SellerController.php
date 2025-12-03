@@ -181,13 +181,34 @@ class SellerController {
 
         $newApiKey = 'sk_live_' . bin2hex(random_bytes(32));
         $newApiSecret = bin2hex(random_bytes(32));
+        $hashedSecret = hash('sha256', $newApiSecret);
 
-        $this->sellerModel->update($this->sellerId, [
+        if (APP_ENV === 'development') {
+            error_log('=== REGENERATING CREDENTIALS ===');
+            error_log('Seller ID: ' . $this->sellerId);
+            error_log('New API Key: ' . $newApiKey);
+            error_log('New API Secret (plain): ' . $newApiSecret);
+            error_log('New API Secret (hashed): ' . $hashedSecret);
+            error_log('Plain length: ' . strlen($newApiSecret));
+            error_log('Hash length: ' . strlen($hashedSecret));
+        }
+
+        $updateResult = $this->sellerModel->update($this->sellerId, [
             'api_key' => $newApiKey,
-            'api_secret' => hash('sha256', $newApiSecret)
+            'api_secret' => $hashedSecret
         ]);
 
+        if (APP_ENV === 'development') {
+            error_log('Update result: ' . ($updateResult ? 'SUCCESS' : 'FAILED'));
+
+            $verifyUpdate = $this->sellerModel->find($this->sellerId);
+            error_log('Verified API Key in DB: ' . $verifyUpdate['api_key']);
+            error_log('Verified API Secret in DB: ' . substr($verifyUpdate['api_secret'], 0, 16) . '...');
+            error_log('Match: ' . ($verifyUpdate['api_secret'] === $hashedSecret ? 'YES' : 'NO'));
+        }
+
         $_SESSION['new_api_secret'] = $newApiSecret;
+        $_SESSION['new_api_key'] = $newApiKey;
         $_SESSION['success'] = 'Novas credenciais geradas com sucesso! Anote o API Secret, ele não será mostrado novamente.';
 
         header('Location: /seller/api-credentials');
