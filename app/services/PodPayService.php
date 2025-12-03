@@ -410,11 +410,24 @@ class PodPayService {
             $size = 300;
             $url = "https://chart.googleapis.com/chart?cht=qr&chs={$size}x{$size}&chl=" . urlencode($qrcodeString);
 
-            $imageData = @file_get_contents($url);
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_FOLLOWLOCATION => true
+            ]);
 
-            if ($imageData === false) {
+            $imageData = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+
+            if ($curlError || $httpCode !== 200 || !$imageData) {
                 $this->logModel->warning('podpay', 'Failed to generate QR code image', [
-                    'qrcode_length' => strlen($qrcodeString)
+                    'qrcode_length' => strlen($qrcodeString),
+                    'http_code' => $httpCode,
+                    'curl_error' => $curlError
                 ]);
                 return null;
             }

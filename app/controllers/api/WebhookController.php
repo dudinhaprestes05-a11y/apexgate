@@ -89,6 +89,30 @@ class WebhookController {
 
     private function processAcquirerWebhook($acquirer, $data, $callbackId) {
         try {
+            // Parse PodPay webhook format
+            if ($acquirer['code'] === 'podpay') {
+                require_once __DIR__ . '/../../services/PodPayService.php';
+                $podpay = new PodPayService($acquirer);
+                $parsedData = $podpay->parseWebhook($data);
+
+                if (!$parsedData) {
+                    throw new Exception('Failed to parse PodPay webhook');
+                }
+
+                // Get transaction_id from our database using acquirer_transaction_id
+                $transactionId = $this->findTransactionIdByAcquirerId(
+                    $parsedData['acquirer_transaction_id'],
+                    $parsedData['transaction_type']
+                );
+
+                if (!$transactionId) {
+                    throw new Exception('Transaction not found for acquirer_transaction_id: ' . $parsedData['acquirer_transaction_id']);
+                }
+
+                $parsedData['transaction_id'] = $transactionId;
+                $data = $parsedData;
+            }
+
             $transactionId = $data['transaction_id'] ?? null;
             $transactionType = $data['transaction_type'] ?? 'cashin';
             $status = $data['status'] ?? null;
@@ -116,6 +140,16 @@ class WebhookController {
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    private function findTransactionIdByAcquirerId($acquirerTransactionId, $transactionType) {
+        if ($transactionType === 'cashin') {
+            $transaction = $this->pixCashinModel->findByAcquirerTransactionId($acquirerTransactionId);
+        } else {
+            $transaction = $this->pixCashoutModel->findByAcquirerTransactionId($acquirerTransactionId);
+        }
+
+        return $transaction ? $transaction['transaction_id'] : null;
     }
 
     private function processCashinWebhook($transactionId, $data) {

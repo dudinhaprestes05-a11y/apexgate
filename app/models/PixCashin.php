@@ -9,6 +9,10 @@ class PixCashin extends BaseModel {
         return $this->findBy('transaction_id', $transactionId);
     }
 
+    public function findByAcquirerTransactionId($acquirerTransactionId) {
+        return $this->findBy('acquirer_transaction_id', $acquirerTransactionId);
+    }
+
     public function findByEndToEndId($endToEndId) {
         return $this->findBy('end_to_end_id', $endToEndId);
     }

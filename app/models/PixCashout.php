@@ -9,6 +9,10 @@ class PixCashout extends BaseModel {
         return $this->findBy('transaction_id', $transactionId);
     }
 
+    public function findByAcquirerTransactionId($acquirerTransactionId) {
+        return $this->findBy('acquirer_transaction_id', $acquirerTransactionId);
+    }
+
     public function createTransaction($data) {
         $data['transaction_id'] = generateTransactionId('CASHOUT');
         $data['status'] = 'pending';
