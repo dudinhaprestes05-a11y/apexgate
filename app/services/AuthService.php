@@ -16,7 +16,15 @@ class AuthService {
         $authData = $this->getAuthFromHeaders();
 
         if (!$authData) {
-            $this->logModel->warning('auth', 'Missing authentication', ['ip' => getClientIp()]);
+            $debugInfo = ['ip' => getClientIp()];
+
+            if (APP_ENV === 'development') {
+                $headers = getAllHeadersCaseInsensitive();
+                $debugInfo['available_headers'] = array_keys($headers);
+                $debugInfo['has_authorization'] = isset($headers['Authorization']);
+            }
+
+            $this->logModel->warning('auth', 'Missing authentication', $debugInfo);
             errorResponse('Authentication is required', 401);
         }
 
@@ -77,12 +85,12 @@ class AuthService {
     }
 
     private function getAuthFromHeaders() {
-        $headers = getallheaders();
+        $headers = getAllHeadersCaseInsensitive();
 
         if (isset($headers['Authorization'])) {
             $auth = $headers['Authorization'];
 
-            if (preg_match('/Basic\s+(.+)/', $auth, $matches)) {
+            if (preg_match('/Basic\s+(.+)/i', $auth, $matches)) {
                 $decoded = base64_decode($matches[1]);
                 if ($decoded && strpos($decoded, ':') !== false) {
                     list($apiKey, $apiSecret) = explode(':', $decoded, 2);
@@ -94,20 +102,24 @@ class AuthService {
                 }
             }
 
-            if (preg_match('/Bearer\s+(.+)/', $auth, $matches)) {
+            if (preg_match('/Bearer\s+(.+)/i', $auth, $matches)) {
                 return ['api_key' => $matches[1]];
             }
         }
 
-        if (isset($headers['X-API-Key'])) {
-            return ['api_key' => $headers['X-API-Key']];
+        if (isset($headers['X-Api-Key'])) {
+            return ['api_key' => $headers['X-Api-Key']];
+        }
+
+        if (APP_ENV === 'development') {
+            error_log('Auth headers received: ' . json_encode(array_keys($headers)));
         }
 
         return null;
     }
 
     private function getSignatureFromHeaders() {
-        $headers = getallheaders();
+        $headers = getAllHeadersCaseInsensitive();
         return $headers['X-Signature'] ?? null;
     }
 

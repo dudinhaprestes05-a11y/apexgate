@@ -240,3 +240,29 @@ function calculateFee($amount, $feePercentage, $feeFixed) {
 function calculateNetAmount($amount, $fee) {
     return $amount - $fee;
 }
+
+function getAllHeadersCaseInsensitive() {
+    $headers = [];
+
+    if (function_exists('getallheaders')) {
+        $rawHeaders = getallheaders();
+        if ($rawHeaders) {
+            foreach ($rawHeaders as $key => $value) {
+                $headers[ucwords(strtolower($key), '-')] = $value;
+            }
+            return $headers;
+        }
+    }
+
+    foreach ($_SERVER as $key => $value) {
+        if (strpos($key, 'HTTP_') === 0) {
+            $headerKey = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+            $headers[$headerKey] = $value;
+        } elseif (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
+            $headerKey = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $key))));
+            $headers[$headerKey] = $value;
+        }
+    }
+
+    return $headers;
+}

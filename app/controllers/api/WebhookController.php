@@ -47,7 +47,7 @@ class WebhookController {
             errorResponse('Invalid JSON payload', 400);
         }
 
-        $headers = getallheaders();
+        $headers = getAllHeadersCaseInsensitive();
         $signature = $headers['X-Signature'] ?? null;
 
         if ($signature && $acquirer['api_secret']) {
