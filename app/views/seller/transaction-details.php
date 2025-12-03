@@ -145,23 +145,17 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             <?php endif; ?>
 
+            <?php if ($transaction['end_to_end_id']): ?>
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 class="font-bold text-gray-900 mb-4">Identificadores</h3>
                 <div class="space-y-3">
-                    <?php if ($transaction['end_to_end_id']): ?>
                     <div>
                         <label class="text-sm font-medium text-gray-600">End-to-End ID</label>
                         <p class="text-gray-900 mt-1 font-mono text-xs break-all"><?= htmlspecialchars($transaction['end_to_end_id']) ?></p>
                     </div>
-                    <?php endif; ?>
-                    <?php if ($transaction['acquirer_transaction_id']): ?>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">ID Adquirente</label>
-                        <p class="text-gray-900 mt-1 font-mono text-xs break-all"><?= htmlspecialchars($transaction['acquirer_transaction_id']) ?></p>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

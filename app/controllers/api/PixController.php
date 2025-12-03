@@ -100,18 +100,24 @@ class PixController {
         $expiresInMinutes = $input['expires_in_minutes'] ?? PIX_EXPIRATION_MINUTES;
         $pixType = $input['pix_type'] ?? 'dynamic';
 
+        $customerData = [
+            'name' => $input['customer']['name'] ?? $seller['name'],
+            'email' => $input['customer']['email'] ?? $seller['email'],
+            'document' => $input['customer']['document'] ?? $seller['document']
+        ];
+
         $acquirerData = [
             'transaction_id' => $transactionId,
             'amount' => $amount,
             'pix_type' => $pixType,
             'expires_at' => date('Y-m-d H:i:s', strtotime("+{$expiresInMinutes} minutes")),
             'metadata' => $input['metadata'] ?? [],
-            'customer' => [
-                'name' => $input['customer']['name'] ?? $seller['name'],
-                'email' => $input['customer']['email'] ?? $seller['email'],
-                'document' => $input['customer']['document'] ?? $seller['document']
-            ]
+            'customer' => $customerData
         ];
+
+        if (isset($input['external_id'])) {
+            $acquirerData['external_id'] = $input['external_id'];
+        }
 
         $acquirerResponse = $this->acquirerService->createPixCashin($acquirer, $acquirerData);
 
@@ -135,6 +141,7 @@ class PixController {
                 'seller_id' => $seller['id'],
                 'acquirer_id' => $acquirer['id'],
                 'transaction_id' => $transactionId,
+                'external_id' => $input['external_id'] ?? null,
                 'amount' => $amount,
                 'fee_amount' => $feeAmount,
                 'net_amount' => $netAmount,
@@ -144,6 +151,9 @@ class PixController {
                 'acquirer_transaction_id' => $acquirerResponse['data']['acquirer_transaction_id'] ?? null,
                 'qrcode' => $acquirerResponse['data']['qrcode'] ?? null,
                 'qrcode_base64' => $acquirerResponse['data']['qrcode_base64'] ?? null,
+                'customer_name' => $customerData['name'],
+                'customer_document' => preg_replace('/[^0-9]/', '', $customerData['document']),
+                'customer_email' => $customerData['email'],
                 'status' => 'pending'
             ];
 
@@ -177,7 +187,7 @@ class PixController {
             'amount' => $amount
         ]);
 
-        successResponse([
+        $response = [
             'transaction_id' => $transactionId,
             'amount' => $amount,
             'fee_amount' => $feeAmount,
@@ -186,7 +196,13 @@ class PixController {
             'qrcode_base64' => $acquirerResponse['data']['qrcode_base64'] ?? null,
             'expires_at' => $acquirerResponse['data']['expiration_date'] ?? date('Y-m-d H:i:s', strtotime("+{$expiresInMinutes} minutes")),
             'status' => $acquirerResponse['data']['status'] ?? 'pending'
-        ], 'PIX transaction created successfully');
+        ];
+
+        if (isset($input['external_id'])) {
+            $response['external_id'] = $input['external_id'];
+        }
+
+        successResponse($response, 'PIX transaction created successfully');
     }
 
     public function consult() {
@@ -209,7 +225,7 @@ class PixController {
             errorResponse('Unauthorized', 403);
         }
 
-        successResponse([
+        $response = [
             'transaction_id' => $transaction['transaction_id'],
             'amount' => $transaction['amount'],
             'fee_amount' => $transaction['fee_amount'],
@@ -220,7 +236,13 @@ class PixController {
             'paid_at' => $transaction['paid_at'],
             'expires_at' => $transaction['expires_at'],
             'created_at' => $transaction['created_at']
-        ]);
+        ];
+
+        if (!empty($transaction['external_id'])) {
+            $response['external_id'] = $transaction['external_id'];
+        }
+
+        successResponse($response);
     }
 
     public function listTransactions() {

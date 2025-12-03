@@ -81,6 +81,7 @@ class CashoutController {
             'seller_id' => $seller['id'],
             'acquirer_id' => $acquirer['id'],
             'transaction_id' => $transactionId,
+            'external_id' => $input['external_id'] ?? null,
             'amount' => $amount,
             'fee_amount' => $feeAmount,
             'net_amount' => $netAmount,
@@ -132,7 +133,7 @@ class CashoutController {
 
         $transaction = $this->pixCashoutModel->findByTransactionId($transactionId);
 
-        successResponse([
+        $response = [
             'transaction_id' => $transactionId,
             'amount' => $amount,
             'fee_amount' => $feeAmount,
@@ -140,7 +141,13 @@ class CashoutController {
             'pix_key' => $pixKey,
             'beneficiary_name' => $beneficiaryName,
             'status' => $transaction['status']
-        ], 'Cashout transaction created successfully');
+        ];
+
+        if (isset($input['external_id'])) {
+            $response['external_id'] = $input['external_id'];
+        }
+
+        successResponse($response, 'Cashout transaction created successfully');
     }
 
     public function consult() {
@@ -163,7 +170,7 @@ class CashoutController {
             errorResponse('Unauthorized', 403);
         }
 
-        successResponse([
+        $response = [
             'transaction_id' => $transaction['transaction_id'],
             'amount' => $transaction['amount'],
             'fee_amount' => $transaction['fee_amount'],
@@ -173,7 +180,13 @@ class CashoutController {
             'beneficiary_name' => $transaction['beneficiary_name'],
             'processed_at' => $transaction['processed_at'],
             'created_at' => $transaction['created_at']
-        ]);
+        ];
+
+        if (!empty($transaction['external_id'])) {
+            $response['external_id'] = $transaction['external_id'];
+        }
+
+        successResponse($response);
     }
 
     public function listTransactions() {

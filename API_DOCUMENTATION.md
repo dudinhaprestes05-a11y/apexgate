@@ -109,8 +109,14 @@ Cria uma nova transação de recebimento PIX.
 ```json
 {
   "amount": 100.50,
+  "external_id": "pedido-123",
   "pix_type": "dynamic",
   "expires_in_minutes": 30,
+  "customer": {
+    "name": "João Silva",
+    "email": "joao@example.com",
+    "document": "12345678900"
+  },
   "metadata": {
     "order_id": "12345",
     "customer_id": "987"
@@ -130,8 +136,13 @@ Cria uma nova transação de recebimento PIX.
 
 **Parâmetros:**
 - `amount` (float, obrigatório): Valor da transação
+- `external_id` (string, opcional): ID externo da transação no seu sistema
 - `pix_type` (string, opcional): Tipo do PIX (dynamic, static, qrcode). Default: dynamic
 - `expires_in_minutes` (int, opcional): Tempo de expiração em minutos. Default: 30
+- `customer` (object, opcional): Dados do cliente pagador
+  - `name` (string): Nome do cliente
+  - `email` (string): Email do cliente
+  - `document` (string): CPF ou CNPJ do cliente
 - `metadata` (object, opcional): Dados adicionais
 - `splits` (array, opcional): Divisão de pagamento entre sellers
 
@@ -142,12 +153,12 @@ Cria uma nova transação de recebimento PIX.
   "message": "PIX transaction created successfully",
   "data": {
     "transaction_id": "CASHIN_20231201120000_a1b2c3d4e5f6",
+    "external_id": "pedido-123",
     "amount": 100.50,
     "fee_amount": 0.99,
     "net_amount": 99.51,
     "qrcode": "00020126580014br.gov.bcb.pix...",
     "qrcode_base64": "data:image/png;base64,iVBORw0KGgo...",
-    "pix_key": "12345678-abcd-1234-efgh-123456789012",
     "expires_at": "2023-12-01 12:30:00",
     "status": "pending"
   }
@@ -176,12 +187,13 @@ Consulta o status e detalhes de uma transação.
   "success": true,
   "data": {
     "transaction_id": "CASHIN_20231201120000_a1b2c3d4e5f6",
+    "external_id": "pedido-123",
     "amount": 100.50,
     "fee_amount": 0.99,
     "net_amount": 99.51,
     "status": "paid",
-    "pix_key": "12345678-abcd-1234-efgh-123456789012",
     "qrcode": "00020126580014br.gov.bcb.pix...",
+    "qrcode_base64": "data:image/png;base64,iVBORw0KGgo...",
     "paid_at": "2023-12-01 12:15:00",
     "expires_at": "2023-12-01 12:30:00",
     "created_at": "2023-12-01 12:00:00"
@@ -245,6 +257,7 @@ Cria uma transação de saque PIX.
 ```json
 {
   "amount": 50.00,
+  "external_id": "saque-456",
   "pix_key": "12345678000190",
   "pix_key_type": "cnpj",
   "beneficiary_name": "Empresa LTDA",
@@ -257,6 +270,7 @@ Cria uma transação de saque PIX.
 
 **Parâmetros:**
 - `amount` (float, obrigatório): Valor do saque
+- `external_id` (string, opcional): ID externo da transação no seu sistema
 - `pix_key` (string, obrigatório): Chave PIX de destino
 - `pix_key_type` (string, obrigatório): Tipo da chave (cpf, cnpj, email, phone, random)
 - `beneficiary_name` (string, obrigatório): Nome do beneficiário
@@ -270,6 +284,7 @@ Cria uma transação de saque PIX.
   "message": "Cashout transaction created successfully",
   "data": {
     "transaction_id": "CASHOUT_20231201130000_b2c3d4e5f6g7",
+    "external_id": "saque-456",
     "amount": 50.00,
     "fee_amount": 0.49,
     "net_amount": 49.51,
@@ -296,6 +311,7 @@ Cria uma transação de saque PIX.
   "success": true,
   "data": {
     "transaction_id": "CASHOUT_20231201130000_b2c3d4e5f6g7",
+    "external_id": "saque-456",
     "amount": 50.00,
     "fee_amount": 0.49,
     "net_amount": 49.51,
