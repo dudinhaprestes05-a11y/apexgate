@@ -60,57 +60,59 @@ const headers = {
 };
 ```
 
-### Métodos Alternativos
+### Métodos de Compatibilidade
 
-Para compatibilidade, também suportamos:
+Para compatibilidade com integrações antigas, também suportamos:
 
-**1. X-API-Key + X-API-Secret Headers:**
-```
-X-API-Key: sua_api_key
-X-API-Secret: seu_api_secret
-Content-Type: application/json
-```
-
-**2. Query String (somente para testes):**
-```
-GET /api/pix/status/TX123?api_key=sua_api_key&api_secret=seu_api_secret
-```
-
-**3. Bearer Token (menos seguro - apenas API Key):**
+**1. Bearer Token:**
 ```
 Authorization: Bearer sua_api_key
 Content-Type: application/json
 ```
 
-> **⚠️ IMPORTANTE:**
-> - O método recomendado é **Basic Auth** (método 1)
-> - Bearer Token valida APENAS o API Key, sem o Secret
-> - Sempre use HTTPS em produção
-> - NUNCA compartilhe ou exponha seu API Secret
+**2. X-API-Key Header:**
+```
+X-API-Key: sua_api_key
+Content-Type: application/json
+```
 
-### Como o Secret é Validado
+**3. X-API-Key + HMAC Signature (legado):**
+```
+X-API-Key: sua_api_key
+X-Signature: hmac_sha256(request_body, api_secret)
+Content-Type: application/json
+```
 
-Quando você regenera credenciais:
-1. Um **API Secret em texto plano** é gerado (ex: `a1b2c3d4...`)
-2. Apenas o **hash SHA256** é armazenado no banco
-3. Você deve guardar o secret em texto plano (mostrado apenas uma vez)
+#### Gerando a Assinatura HMAC (método legado)
 
-Na autenticação:
-1. Você envia o **secret em texto plano**
-2. O sistema calcula o hash e compara com o banco
-3. Se coincidir, autentica com sucesso
+**PHP:**
+```php
+$payload = json_encode($data);
+$signature = hash_hmac('sha256', $payload, $api_secret);
+```
 
-**Exemplo:**
-```bash
-# Você recebe ao regenerar:
-API_KEY=sk_live_abc123...
-API_SECRET=def456...     # Este é o valor que você usa na API
+**Python:**
+```python
+import hmac
+import hashlib
+import json
 
-# No banco fica armazenado:
-api_secret=hash('sha256', 'def456...')  # Apenas o hash
+payload = json.dumps(data)
+signature = hmac.new(
+    api_secret.encode(),
+    payload.encode(),
+    hashlib.sha256
+).hexdigest()
+```
 
-# Na requisição você envia:
-Authorization: Basic base64(sk_live_abc123:def456)
+**Node.js:**
+```javascript
+const crypto = require('crypto');
+const payload = JSON.stringify(data);
+const signature = crypto
+  .createHmac('sha256', apiSecret)
+  .update(payload)
+  .digest('hex');
 ```
 
 ## Endpoints
