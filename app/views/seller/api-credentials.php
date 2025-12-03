@@ -4,13 +4,16 @@ require_once __DIR__ . '/../layouts/header.php';
 
 $newApiSecret = $_SESSION['new_api_secret'] ?? null;
 $newApiKey = $_SESSION['new_api_key'] ?? null;
+$newWebhookSecret = $_SESSION['new_webhook_secret'] ?? null;
 unset($_SESSION['new_api_secret']);
 unset($_SESSION['new_api_key']);
+unset($_SESSION['new_webhook_secret']);
 
 if (APP_ENV === 'development' && $newApiSecret) {
     error_log('=== DISPLAYING NEW CREDENTIALS ===');
     error_log('Session API Secret: ' . $newApiSecret);
     error_log('Session API Key: ' . ($newApiKey ?? 'NOT SET'));
+    error_log('Session Webhook Secret: ' . ($newWebhookSecret ?? 'NOT SET'));
     error_log('DB API Key: ' . $seller['api_key']);
     error_log('Keys match: ' . (($newApiKey === $seller['api_key']) ? 'YES' : 'NO'));
 }
@@ -54,12 +57,28 @@ if (APP_ENV === 'development' && $newApiSecret) {
                     </div>
                 </div>
 
+                <?php if ($newWebhookSecret): ?>
+                <div class="mt-3">
+                    <label class="block text-xs font-medium text-yellow-800 mb-1">Novo Webhook Secret (para validar webhooks):</label>
+                    <div class="p-3 bg-white rounded border border-yellow-300 flex items-center justify-between">
+                        <code class="text-sm text-gray-900 break-all"><?= htmlspecialchars($newWebhookSecret) ?></code>
+                        <button onclick="copyToClipboard('<?= htmlspecialchars($newWebhookSecret) ?>', this)"
+                                class="ml-2 px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-xs">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <?php if (APP_ENV === 'development'): ?>
                 <div class="mt-3 p-2 bg-gray-100 rounded text-xs">
                     <strong>Debug Info:</strong><br>
                     Secret Length: <?= strlen($newApiSecret) ?> chars<br>
                     Hash (SHA256): <?= hash('sha256', $newApiSecret) ?><br>
-                    DB Hash: <?= $seller['api_secret'] ?>
+                    DB Hash: <?= $seller['api_secret'] ?><br>
+                    <?php if ($newWebhookSecret): ?>
+                    Webhook Secret Length: <?= strlen($newWebhookSecret) ?> chars
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
             </div>

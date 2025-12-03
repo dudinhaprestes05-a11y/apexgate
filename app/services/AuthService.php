@@ -40,17 +40,10 @@ class AuthService {
                 errorResponse('Invalid credentials', 401);
             }
 
-            $signature = $this->getSignatureFromHeaders();
-            $body = file_get_contents('php://input');
-
-            if ($signature && $body) {
-                if (!verifyHmacSignature($body, $signature, $seller['api_secret'])) {
-                    $this->logModel->warning('auth', 'Invalid HMAC signature', [
-                        'seller_id' => $seller['id'],
-                        'ip' => getClientIp()
-                    ]);
-                    errorResponse('Invalid signature', 401);
-                }
+            if (APP_ENV === 'development') {
+                error_log('=== BEARER TOKEN AUTH ===');
+                error_log('Bearer token auth only validates API Key');
+                error_log('For secure auth, use Basic Auth with API Key + Secret');
             }
         }
 

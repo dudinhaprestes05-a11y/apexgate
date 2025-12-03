@@ -46,7 +46,15 @@ class WebhookService {
             ];
         }
 
-        $webhookSecret = $seller['webhook_secret'] ?? $seller['api_secret'];
+        if (!isset($seller['webhook_secret']) || empty($seller['webhook_secret'])) {
+            $webhookSecret = bin2hex(random_bytes(32));
+            $this->sellerModel->update($sellerId, ['webhook_secret' => $webhookSecret]);
+            $this->logModel->info('webhook', 'Auto-generated webhook_secret for seller', [
+                'seller_id' => $sellerId
+            ]);
+        } else {
+            $webhookSecret = $seller['webhook_secret'];
+        }
 
         $this->webhookQueue->enqueue(
             $sellerId,

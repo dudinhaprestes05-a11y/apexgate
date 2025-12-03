@@ -41,24 +41,17 @@ $response = curl_exec($ch);
 curl_close($ch);
 ```
 
-### Método Legado (HMAC)
+### Método Alternativo (Headers)
 
-Para compatibilidade, ainda suportamos autenticação via HMAC:
+Para compatibilidade, também suportamos X-API-Key + X-API-Secret:
 
 ```bash
 X-API-Key: sk_test_demo_key_123456789
-X-Signature: <HMAC_SHA256>
+X-API-Secret: sk_secret_demo_key_987654321
 Content-Type: application/json
 ```
 
-Gerando assinatura HMAC:
-
-```php
-<?php
-$apiSecret = 'YOUR_API_SECRET';
-$payload = json_encode($data);
-$signature = hash_hmac('sha256', $payload, $apiSecret);
-```
+**Importante:** Use sempre o secret em texto plano. O sistema fará o hash automaticamente para validação.
 
 ## 1. Criar PIX (Cash-in)
 
