@@ -615,6 +615,12 @@ class AdminController {
         $revenueRetentionPercentage = $this->parseDecimal($_POST['revenue_retention_percentage'] ?? 0);
         $retentionReason = $_POST['retention_reason'] ?? '';
 
+        // Se retenção de saldo está desativada, zerar percentual e motivo
+        if (!$balanceRetention) {
+            $revenueRetentionPercentage = 0;
+            $retentionReason = '';
+        }
+
         if ($feePercentageCashin < 0) {
             $_SESSION['error'] = 'Taxa percentual de cash-in não pode ser negativa';
             header('Location: /admin/sellers/view/' . $sellerId);
