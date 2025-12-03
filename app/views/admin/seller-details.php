@@ -281,6 +281,145 @@ $statusColors = [
 
     <!-- Right Column - 1/3 width -->
     <div class="space-y-6">
+        <!-- Documentos -->
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                <span>
+                    <i class="fas fa-file-alt text-purple-500 mr-2"></i>
+                    Documentos
+                </span>
+                <?php if (!empty($missingDocs)): ?>
+                <span class="badge badge-warning text-xs">
+                    <i class="fas fa-exclamation-triangle mr-1"></i><?= count($missingDocs) ?> faltando
+                </span>
+                <?php endif; ?>
+            </h3>
+
+            <?php if (!empty($missingDocs)): ?>
+            <div class="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3 mb-4">
+                <p class="text-yellow-400 text-sm font-medium mb-2">
+                    <i class="fas fa-exclamation-circle mr-1"></i>Documentos Faltantes:
+                </p>
+                <ul class="text-yellow-300 text-sm space-y-1 list-disc list-inside">
+                    <?php foreach ($missingDocs as $doc): ?>
+                    <li><?= $doc ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
+
+            <div class="space-y-3">
+                <?php if (empty($documents)): ?>
+                    <div class="text-center py-6">
+                        <i class="fas fa-folder-open text-3xl text-slate-600 mb-2"></i>
+                        <p class="text-slate-400 text-sm">Nenhum documento enviado</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($documents as $doc): ?>
+                        <?php
+                        $statusIcons = [
+                            'pending' => ['icon' => 'clock', 'color' => 'text-yellow-500'],
+                            'approved' => ['icon' => 'check-circle', 'color' => 'text-green-500'],
+                            'rejected' => ['icon' => 'times-circle', 'color' => 'text-red-500']
+                        ];
+                        $status = $statusIcons[$doc['status']] ?? $statusIcons['pending'];
+                        ?>
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-700/50 transition">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-<?= $status['icon'] ?> <?= $status['color'] ?>"></i>
+                                <div>
+                                    <p class="text-white text-sm font-medium"><?= $this->getDocumentTypeName($doc['document_type']) ?></p>
+                                    <p class="text-slate-400 text-xs"><?= ucfirst($doc['status']) ?></p>
+                                </div>
+                            </div>
+                            <button onclick="viewDocument(<?= $doc['id'] ?>, '<?= htmlspecialchars($doc['file_path']) ?>', '<?= $this->getDocumentTypeName($doc['document_type']) ?>')"
+                                    class="text-blue-400 hover:text-blue-300 text-sm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Controles Administrativos -->
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-cog text-red-500 mr-2"></i>
+                Controles Administrativos
+            </h3>
+
+            <!-- Status de Operações -->
+            <div class="space-y-3 mb-4">
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-arrow-down text-green-500"></i>
+                        <span class="text-white text-sm">Cash-in</span>
+                    </div>
+                    <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/toggle-cashin" class="inline">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" <?= $seller['cashin_enabled'] ? 'checked' : '' ?> onchange="this.form.submit()" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </form>
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-arrow-up text-red-500"></i>
+                        <span class="text-white text-sm">Cash-out</span>
+                    </div>
+                    <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/toggle-cashout" class="inline">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" <?= $seller['cashout_enabled'] ? 'checked' : '' ?> onchange="this.form.submit()" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bloqueio -->
+            <?php if ($seller['temporarily_blocked'] || $seller['permanently_blocked']): ?>
+            <div class="bg-red-900/20 border border-red-700 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-red-400 font-medium text-sm">
+                        <i class="fas fa-ban mr-1"></i>
+                        <?= $seller['permanently_blocked'] ? 'Bloqueado Permanentemente' : 'Bloqueado Temporariamente' ?>
+                    </span>
+                </div>
+                <?php if ($seller['blocked_reason']): ?>
+                <p class="text-red-300 text-xs mb-3"><?= htmlspecialchars($seller['blocked_reason']) ?></p>
+                <?php endif; ?>
+                <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/unblock">
+                    <button type="submit" class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition">
+                        <i class="fas fa-unlock mr-1"></i>Desbloquear
+                    </button>
+                </form>
+            </div>
+            <?php else: ?>
+            <button onclick="openBlockModal()" class="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition mb-4">
+                <i class="fas fa-ban mr-1"></i>Bloquear Seller
+            </button>
+            <?php endif; ?>
+
+            <!-- Retenção -->
+            <button onclick="openRetentionModal()" class="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition">
+                <i class="fas fa-hand-holding-usd mr-1"></i>Configurar Retenção
+            </button>
+
+            <?php if ($seller['balance_retention'] || $seller['revenue_retention_percentage'] > 0): ?>
+            <div class="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3 mt-3">
+                <p class="text-yellow-400 text-xs font-medium mb-1">Retenção Ativa:</p>
+                <?php if ($seller['balance_retention']): ?>
+                <p class="text-yellow-300 text-xs">• Saldo retido</p>
+                <?php endif; ?>
+                <?php if ($seller['revenue_retention_percentage'] > 0): ?>
+                <p class="text-yellow-300 text-xs">• <?= $seller['revenue_retention_percentage'] ?>% do faturamento</p>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
         <!-- API Credentials -->
         <?php if ($seller['api_key']): ?>
         <div class="card p-6">
@@ -388,7 +527,122 @@ $statusColors = [
     </div>
 </div>
 
+<!-- Modal Bloqueio -->
+<div id="blockModal" class="modal hidden">
+    <div class="modal-content max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-white">Bloquear Seller</h3>
+            <button onclick="closeBlockModal()" class="text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/block">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Tipo de Bloqueio</label>
+                    <select name="block_type" class="w-full px-4 py-2.5 bg-slate-700 border-slate-600 text-white rounded-lg" required>
+                        <option value="temporary">Temporário</option>
+                        <option value="permanent">Permanente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Motivo</label>
+                    <textarea name="reason" rows="4" class="w-full px-4 py-2.5" placeholder="Descreva o motivo do bloqueio..." required></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeBlockModal()" class="px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                    <i class="fas fa-ban mr-2"></i>Bloquear
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Retenção -->
+<div id="retentionModal" class="modal hidden">
+    <div class="modal-content max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-white">Configurar Retenção</h3>
+            <button onclick="closeRetentionModal()" class="text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/update-retention">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                    <span class="text-white text-sm">Reter Saldo</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="balance_retention" value="1" <?= $seller['balance_retention'] ? 'checked' : '' ?> class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        % Retenção do Faturamento
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               name="revenue_retention_percentage"
+                               value="<?= $seller['revenue_retention_percentage'] ?>"
+                               step="0.01"
+                               min="0"
+                               max="100"
+                               class="w-full px-4 py-2.5 pr-10"
+                               required>
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">0% = sem retenção</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Motivo</label>
+                    <textarea name="retention_reason" rows="3" class="w-full px-4 py-2.5" placeholder="Descreva o motivo da retenção..."><?= htmlspecialchars($seller['retention_reason'] ?? '') ?></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeRetentionModal()" class="px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition">
+                    <i class="fas fa-save mr-2"></i>Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Visualizar Documento -->
+<div id="documentModal" class="modal hidden">
+    <div class="modal-content max-w-4xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-white" id="documentTitle">Documento</h3>
+            <button onclick="closeDocumentModal()" class="text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <img id="documentImage" src="" alt="Documento" class="w-full rounded-lg">
+        </div>
+        <div class="flex items-center justify-end space-x-3">
+            <button type="button" onclick="closeDocumentModal()" class="px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+                Fechar
+            </button>
+            <button type="button" onclick="approveDocument()" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                <i class="fas fa-check mr-2"></i>Aprovar
+            </button>
+            <button type="button" onclick="rejectDocument()" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                <i class="fas fa-times mr-2"></i>Rejeitar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+let currentDocumentId = null;
+
 function openRejectModal() {
     document.getElementById('rejectModal').classList.remove('hidden');
     document.getElementById('rejectModal').classList.add('flex');
@@ -397,6 +651,89 @@ function openRejectModal() {
 function closeRejectModal() {
     document.getElementById('rejectModal').classList.add('hidden');
     document.getElementById('rejectModal').classList.remove('flex');
+}
+
+function openBlockModal() {
+    document.getElementById('blockModal').classList.remove('hidden');
+    document.getElementById('blockModal').classList.add('flex');
+}
+
+function closeBlockModal() {
+    document.getElementById('blockModal').classList.add('hidden');
+    document.getElementById('blockModal').classList.remove('flex');
+}
+
+function openRetentionModal() {
+    document.getElementById('retentionModal').classList.remove('hidden');
+    document.getElementById('retentionModal').classList.add('flex');
+}
+
+function closeRetentionModal() {
+    document.getElementById('retentionModal').classList.add('hidden');
+    document.getElementById('retentionModal').classList.remove('flex');
+}
+
+function viewDocument(docId, filePath, docName) {
+    currentDocumentId = docId;
+    document.getElementById('documentTitle').textContent = docName;
+    document.getElementById('documentImage').src = '/uploads/documents/' + filePath;
+    document.getElementById('documentModal').classList.remove('hidden');
+    document.getElementById('documentModal').classList.add('flex');
+}
+
+function closeDocumentModal() {
+    document.getElementById('documentModal').classList.add('hidden');
+    document.getElementById('documentModal').classList.remove('flex');
+    currentDocumentId = null;
+}
+
+function approveDocument() {
+    if (!currentDocumentId) return;
+
+    fetch(`/admin/documents/${currentDocumentId}/approve`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Documento aprovado com sucesso!');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        alert('Erro ao aprovar documento');
+    });
+}
+
+function rejectDocument() {
+    if (!currentDocumentId) return;
+
+    const reason = prompt('Motivo da rejeição:');
+    if (!reason) return;
+
+    const formData = new FormData();
+    formData.append('reason', reason);
+
+    fetch(`/admin/documents/${currentDocumentId}/reject`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Documento rejeitado');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        alert('Erro ao rejeitar documento');
+    });
 }
 </script>
 

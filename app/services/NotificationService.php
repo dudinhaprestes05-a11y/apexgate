@@ -189,4 +189,31 @@ class NotificationService {
 
         return mail($to, $subject, $fullMessage, $headers);
     }
+
+    public function notifySellerBlocked($sellerId, $blockType, $reason) {
+        $seller = $this->sellerModel->find($sellerId);
+
+        if (!$seller) {
+            return false;
+        }
+
+        $user = $this->userModel->findBy('seller_id', $sellerId);
+
+        $title = $blockType === 'permanent' ? 'Conta Bloqueada Permanentemente' : 'Conta Bloqueada Temporariamente';
+        $message = "Sua conta foi bloqueada. Motivo: {$reason}";
+        $link = '/seller/dashboard';
+
+        $this->notificationModel->createNotification(
+            $user['id'] ?? null,
+            $sellerId,
+            'seller_blocked',
+            $title,
+            $message,
+            $link
+        );
+
+        $this->sendEmail($seller['email'], $title, $message);
+
+        return true;
+    }
 }

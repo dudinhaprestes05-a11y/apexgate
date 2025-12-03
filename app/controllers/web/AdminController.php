@@ -92,7 +92,30 @@ class AdminController {
             $this->cashoutModel->getRecentBySeller($sellerId, 5)
         );
 
+        $requiredDocs = ['rg', 'cpf', 'proof_address', 'selfie'];
+        $missingDocs = [];
+        $existingDocTypes = array_column($documents, 'document_type');
+
+        foreach ($requiredDocs as $docType) {
+            if (!in_array($docType, $existingDocTypes)) {
+                $missingDocs[] = $this->getDocumentTypeName($docType);
+            }
+        }
+
         require __DIR__ . '/../../views/admin/seller-details.php';
+    }
+
+    private function getDocumentTypeName($type) {
+        $names = [
+            'rg' => 'RG',
+            'cpf' => 'CPF',
+            'cnpj' => 'CNPJ',
+            'proof_address' => 'Comprovante de Endereço',
+            'selfie' => 'Selfie com Documento',
+            'bank_statement' => 'Extrato Bancário',
+            'contract' => 'Contrato Social'
+        ];
+        return $names[$type] ?? $type;
     }
 
     public function approveSeller($sellerId) {
@@ -574,13 +597,13 @@ class AdminController {
         $feePercentageCashout = floatval($_POST['fee_percentage_cashout'] ?? 0);
         $feeFixedCashout = floatval($_POST['fee_fixed_cashout'] ?? 0);
 
-        if ($feePercentageCashin < 0 || $feePercentageCashin > 0.15) {
+        if ($feePercentageCashin < 0 || $feePercentageCashin > 15) {
             $_SESSION['error'] = 'Taxa percentual de cash-in deve estar entre 0% e 15%';
             header('Location: /admin/sellers/view/' . $sellerId);
             exit;
         }
 
-        if ($feePercentageCashout < 0 || $feePercentageCashout > 0.15) {
+        if ($feePercentageCashout < 0 || $feePercentageCashout > 15) {
             $_SESSION['error'] = 'Taxa percentual de cash-out deve estar entre 0% e 15%';
             header('Location: /admin/sellers/view/' . $sellerId);
             exit;
@@ -676,5 +699,215 @@ class AdminController {
     private function isAjaxRequest() {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    }
+
+    public function toggleCashin($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $enabled = !$seller['cashin_enabled'];
+        $this->sellerModel->update($sellerId, ['cashin_enabled' => $enabled]);
+
+        $this->logModel->create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => ($enabled ? 'Cash-in ativado' : 'Cash-in desativado') . ' para seller ID ' . $sellerId,
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'cashin_enabled' => $enabled,
+                'changed_by' => $_SESSION['user_id']
+            ])
+        ]);
+
+        $_SESSION['success'] = 'Cash-in ' . ($enabled ? 'ativado' : 'desativado') . ' com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
+    }
+
+    public function toggleCashout($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $enabled = !$seller['cashout_enabled'];
+        $this->sellerModel->update($sellerId, ['cashout_enabled' => $enabled]);
+
+        $this->logModel->create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => ($enabled ? 'Cash-out ativado' : 'Cash-out desativado') . ' para seller ID ' . $sellerId,
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'cashout_enabled' => $enabled,
+                'changed_by' => $_SESSION['user_id']
+            ])
+        ]);
+
+        $_SESSION['success'] = 'Cash-out ' . ($enabled ? 'ativado' : 'desativado') . ' com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
+    }
+
+    public function blockSeller($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $blockType = $_POST['block_type'] ?? 'temporary';
+        $reason = $_POST['reason'] ?? '';
+
+        $updateData = [
+            'blocked_reason' => $reason,
+            'blocked_at' => date('Y-m-d H:i:s'),
+            'blocked_by' => $_SESSION['user_id']
+        ];
+
+        if ($blockType === 'permanent') {
+            $updateData['permanently_blocked'] = true;
+            $updateData['temporarily_blocked'] = false;
+            $updateData['status'] = 'blocked';
+        } else {
+            $updateData['temporarily_blocked'] = true;
+            $updateData['permanently_blocked'] = false;
+        }
+
+        $this->sellerModel->update($sellerId, $updateData);
+
+        $this->logModel->create([
+            'level' => 'warning',
+            'category' => 'admin',
+            'message' => 'Seller bloqueado ' . ($blockType === 'permanent' ? 'permanentemente' : 'temporariamente'),
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'block_type' => $blockType,
+                'reason' => $reason,
+                'blocked_by' => $_SESSION['user_id']
+            ])
+        ]);
+
+        $this->notificationService->notifySellerBlocked($sellerId, $blockType, $reason);
+
+        $_SESSION['success'] = 'Seller bloqueado com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
+    }
+
+    public function unblockSeller($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $this->sellerModel->update($sellerId, [
+            'temporarily_blocked' => false,
+            'permanently_blocked' => false,
+            'blocked_reason' => null,
+            'blocked_at' => null,
+            'blocked_by' => null,
+            'status' => 'active'
+        ]);
+
+        $this->logModel->create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => 'Seller desbloqueado',
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'unblocked_by' => $_SESSION['user_id']
+            ])
+        ]);
+
+        $_SESSION['success'] = 'Seller desbloqueado com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
+    }
+
+    public function updateRetention($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $balanceRetention = isset($_POST['balance_retention']) ? 1 : 0;
+        $revenueRetentionPercentage = floatval($_POST['revenue_retention_percentage'] ?? 0);
+        $retentionReason = $_POST['retention_reason'] ?? '';
+
+        if ($revenueRetentionPercentage < 0 || $revenueRetentionPercentage > 100) {
+            $_SESSION['error'] = 'Percentual de retenção deve estar entre 0% e 100%';
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $updateData = [
+            'balance_retention' => $balanceRetention,
+            'revenue_retention_percentage' => $revenueRetentionPercentage,
+            'retention_reason' => $retentionReason
+        ];
+
+        if ($balanceRetention || $revenueRetentionPercentage > 0) {
+            $updateData['retention_started_at'] = date('Y-m-d H:i:s');
+            $updateData['retention_started_by'] = $_SESSION['user_id'];
+        } else {
+            $updateData['retention_started_at'] = null;
+            $updateData['retention_started_by'] = null;
+        }
+
+        $this->sellerModel->update($sellerId, $updateData);
+
+        $this->logModel->create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => 'Configuração de retenção atualizada',
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'balance_retention' => $balanceRetention,
+                'revenue_retention_percentage' => $revenueRetentionPercentage,
+                'retention_reason' => $retentionReason,
+                'updated_by' => $_SESSION['user_id']
+            ])
+        ]);
+
+        $_SESSION['success'] = 'Retenção atualizada com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
     }
 }

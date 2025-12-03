@@ -131,6 +131,31 @@ try {
         $controller = new AdminController();
         $controller->updateSellerFees($matches[1]);
     }
+    elseif (preg_match('#^/admin/sellers/(\d+)/toggle-cashin$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->toggleCashin($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/toggle-cashout$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->toggleCashout($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/block$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->blockSeller($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/unblock$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->unblockSeller($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/update-retention$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->updateRetention($matches[1]);
+    }
     elseif ($uri === '/admin/documents') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
