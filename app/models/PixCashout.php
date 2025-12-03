@@ -162,4 +162,45 @@ class PixCashout extends BaseModel {
 
         return $stmt->fetchAll();
     }
+
+    public function getTotalAmountBySeller($sellerId) {
+        $sql = "
+            SELECT COALESCE(SUM(amount), 0) as total
+            FROM {$this->table}
+            WHERE seller_id = ? AND status = 'completed'
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sellerId]);
+
+        $result = $stmt->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    public function countByStatus($sellerId, $status) {
+        $sql = "
+            SELECT COUNT(*) as total
+            FROM {$this->table}
+            WHERE seller_id = ? AND status = ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sellerId, $status]);
+
+        return $stmt->fetchColumn();
+    }
+
+    public function getRecentBySeller($sellerId, $limit = 10) {
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE seller_id = ?
+            ORDER BY created_at DESC
+            LIMIT ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sellerId, $limit]);
+
+        return $stmt->fetchAll();
+    }
 }
