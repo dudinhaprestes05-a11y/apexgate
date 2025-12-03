@@ -115,9 +115,14 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Rejeitar Documento</h3>
+<div id="rejectModal" class="modal hidden">
+    <div class="modal-content max-w-md bg-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Rejeitar Documento</h3>
+            <button onclick="hideRejectModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
         <form id="rejectForm">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Motivo da Rejeição</label>
@@ -142,12 +147,10 @@ const documentId = <?= $document['id'] ?>;
 
 function showRejectModal() {
     document.getElementById('rejectModal').classList.remove('hidden');
-    document.getElementById('rejectModal').classList.add('flex');
 }
 
 function hideRejectModal() {
     document.getElementById('rejectModal').classList.add('hidden');
-    document.getElementById('rejectModal').classList.remove('flex');
 }
 
 function approveDocument(docId) {

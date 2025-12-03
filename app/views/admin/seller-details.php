@@ -537,19 +537,26 @@ $statusColors = [
 </div>
 
 <!-- Reject Modal -->
-<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
-    <div class="card p-8 max-w-md w-full mx-4">
-        <h3 class="text-2xl font-bold text-white mb-4">Rejeitar Seller</h3>
+<div id="rejectModal" class="modal hidden">
+    <div class="modal-content max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-white">Rejeitar Seller</h3>
+            <button onclick="closeRejectModal()" class="text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
         <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/reject">
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-300 mb-2">Motivo da Rejeição</label>
-                <textarea name="reason" rows="4" class="w-full px-4 py-2.5" required placeholder="Digite o motivo da rejeição..."></textarea>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Motivo da Rejeição</label>
+                    <textarea name="reason" rows="4" class="w-full px-4 py-2.5" required placeholder="Digite o motivo da rejeição..."></textarea>
+                </div>
             </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+            <div class="flex items-center justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeRejectModal()" class="px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
                     Cancelar
                 </button>
-                <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                <button type="submit" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
                     <i class="fas fa-times mr-2"></i>Rejeitar
                 </button>
             </div>

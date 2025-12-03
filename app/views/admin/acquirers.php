@@ -120,8 +120,8 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<div id="acquirerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
-    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+<div id="acquirerModal" class="modal hidden">
+    <div class="modal-content max-w-2xl bg-white">
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Nova Adquirente</h2>
@@ -203,11 +203,11 @@ function openCreateModal() {
     document.getElementById('modalTitle').textContent = 'Nova Adquirente';
     document.getElementById('acquirerForm').reset();
     document.getElementById('acquirer_id').value = '';
-    document.getElementById('acquirerModal').style.display = 'flex';
+    document.getElementById('acquirerModal').classList.remove('hidden');
 }
 
 function closeModal() {
-    document.getElementById('acquirerModal').style.display = 'none';
+    document.getElementById('acquirerModal').classList.add('hidden');
 }
 
 function editAcquirer(id) {
@@ -224,7 +224,7 @@ function editAcquirer(id) {
                 document.getElementById('acquirer_priority').value = data.acquirer.priority_order;
                 document.getElementById('acquirer_status').value = data.acquirer.status;
                 document.getElementById('acquirer_daily_limit').value = data.acquirer.daily_limit;
-                document.getElementById('acquirerModal').style.display = 'flex';
+                document.getElementById('acquirerModal').classList.remove('hidden');
             }
         })
         .catch(err => alert('Erro ao carregar dados da adquirente'));
