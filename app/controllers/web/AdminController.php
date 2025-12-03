@@ -609,6 +609,25 @@ class AdminController {
         exit;
     }
 
+    public function reports() {
+        $period = $_GET['period'] ?? '7days';
+
+        $dateFrom = match($period) {
+            '7days' => date('Y-m-d', strtotime('-7 days')),
+            '30days' => date('Y-m-d', strtotime('-30 days')),
+            '90days' => date('Y-m-d', strtotime('-90 days')),
+            default => date('Y-m-d', strtotime('-7 days'))
+        };
+
+        $stats = [
+            'period' => $period,
+            'date_from' => $dateFrom,
+            'total_sellers' => $this->sellerModel->count(['status' => 'active'])
+        ];
+
+        require __DIR__ . '/../../views/admin/reports.php';
+    }
+
     public function logs() {
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $perPage = 50;

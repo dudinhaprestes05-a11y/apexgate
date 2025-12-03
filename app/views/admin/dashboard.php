@@ -102,7 +102,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 <option>Últimos 90 dias</option>
             </select>
         </div>
-        <canvas id="transactionsChart" class="w-full" height="250"></canvas>
+        <div class="relative h-64">
+            <canvas id="transactionsChart"></canvas>
+        </div>
     </div>
 
     <!-- Revenue Chart -->
@@ -115,7 +117,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 <option>Últimos 90 dias</option>
             </select>
         </div>
-        <canvas id="revenueChart" class="w-full" height="250"></canvas>
+        <div class="relative h-64">
+            <canvas id="revenueChart"></canvas>
+        </div>
     </div>
 </div>
 
@@ -328,7 +332,7 @@ new Chart(transactionsCtx, {
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         plugins: {
             legend: {
                 labels: {
@@ -375,7 +379,7 @@ new Chart(revenueCtx, {
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         plugins: {
             legend: {
                 labels: {

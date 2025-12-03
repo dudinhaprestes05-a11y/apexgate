@@ -191,6 +191,11 @@ try {
         $controller = new AdminController();
         $controller->deleteAcquirer($matches[1]);
     }
+    elseif ($uri === '/admin/reports') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->reports();
+    }
     elseif ($uri === '/admin/logs') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
