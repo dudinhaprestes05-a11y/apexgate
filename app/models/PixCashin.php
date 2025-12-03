@@ -151,4 +151,18 @@ class PixCashin extends BaseModel {
 
         return $stmt->fetchAll();
     }
+
+    public function getTotalAmount() {
+        $sql = "
+            SELECT COALESCE(SUM(amount), 0) as total
+            FROM {$this->table}
+            WHERE status = 'paid'
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $result = $stmt->fetch();
+        return $result['total'] ?? 0;
+    }
 }

@@ -109,7 +109,21 @@ class PixCashout extends BaseModel {
         return $stmt->fetchAll();
     }
 
-    public function getTotalAmount($sellerId, $status, $startDate = null, $endDate = null) {
+    public function getTotalAmount($sellerId = null, $status = null, $startDate = null, $endDate = null) {
+        if ($sellerId === null && $status === null) {
+            $sql = "
+                SELECT COALESCE(SUM(amount), 0) as total
+                FROM {$this->table}
+                WHERE status = 'completed'
+            ";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        }
+
         $params = [$sellerId, $status];
         $dateFilter = '';
 
