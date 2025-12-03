@@ -395,13 +395,34 @@ function hideDocumentModal() {
 }
 
 function approveDocument(documentId) {
-    if (confirm('Tem certeza que deseja aprovar este documento?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/documents/${documentId}/approve`;
-        document.body.appendChild(form);
-        form.submit();
+    if (!confirm('Tem certeza que deseja aprovar este documento?')) {
+        return;
     }
+
+    const form = new FormData();
+
+    fetch(`/admin/documents/${documentId}/approve`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: form
+    })
+    .then(response => {
+        if (response.ok) {
+            hideDocumentModal();
+            showSuccessMessage('Documento aprovado com sucesso!');
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            showErrorMessage('Erro ao aprovar documento');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('Erro ao aprovar documento');
+    });
 }
 
 function rejectDocument(documentId) {
@@ -414,6 +435,69 @@ function rejectDocument(documentId) {
 function hideRejectDocModal() {
     document.getElementById('rejectDocModal').classList.add('hidden');
     document.getElementById('rejectDocModal').classList.remove('flex');
+}
+
+document.getElementById('rejectDocForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const documentId = currentDocumentId;
+
+    fetch(`/admin/documents/${documentId}/reject`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            hideRejectDocModal();
+            hideDocumentModal();
+            showSuccessMessage('Documento rejeitado');
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            showErrorMessage('Erro ao rejeitar documento');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('Erro ao rejeitar documento');
+    });
+});
+
+function showSuccessMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'fixed top-4 right-4 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50 fade-in';
+    alert.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-3"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-lg z-50 fade-in';
+    alert.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-3"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        alert.remove();
+    }, 3000);
 }
 </script>
 

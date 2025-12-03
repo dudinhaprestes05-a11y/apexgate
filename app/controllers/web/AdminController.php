@@ -198,6 +198,13 @@ class AdminController {
 
         if (!$document) {
             $_SESSION['error'] = 'Documento não encontrado';
+
+            if ($this->isAjaxRequest()) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Documento não encontrado']);
+                exit;
+            }
+
             header('Location: /admin/documents');
             exit;
         }
@@ -206,6 +213,13 @@ class AdminController {
         $this->notificationService->notifyDocumentApproved($document['seller_id'], $document['document_type']);
 
         $_SESSION['success'] = 'Documento aprovado!';
+
+        if ($this->isAjaxRequest()) {
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'Documento aprovado!']);
+            exit;
+        }
+
         header('Location: /admin/documents/view/' . $documentId);
         exit;
     }
@@ -222,6 +236,13 @@ class AdminController {
 
         if (!$document) {
             $_SESSION['error'] = 'Documento não encontrado';
+
+            if ($this->isAjaxRequest()) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Documento não encontrado']);
+                exit;
+            }
+
             header('Location: /admin/documents');
             exit;
         }
@@ -230,6 +251,13 @@ class AdminController {
         $this->notificationService->notifyDocumentRejected($document['seller_id'], $document['document_type'], $reason);
 
         $_SESSION['success'] = 'Documento rejeitado';
+
+        if ($this->isAjaxRequest()) {
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'Documento rejeitado']);
+            exit;
+        }
+
         header('Location: /admin/documents/view/' . $documentId);
         exit;
     }
@@ -281,5 +309,10 @@ class AdminController {
         }
 
         require __DIR__ . '/../../views/admin/logs.php';
+    }
+
+    private function isAjaxRequest() {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
     }
 }
