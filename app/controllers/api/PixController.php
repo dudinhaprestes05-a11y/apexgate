@@ -144,7 +144,6 @@ class PixController {
                 'acquirer_transaction_id' => $acquirerResponse['data']['acquirer_transaction_id'] ?? null,
                 'qrcode' => $acquirerResponse['data']['qrcode'] ?? null,
                 'qrcode_base64' => $acquirerResponse['data']['qrcode_base64'] ?? null,
-                'pix_key' => $acquirerResponse['data']['pix_key'] ?? null,
                 'status' => 'pending'
             ];
 
@@ -185,7 +184,6 @@ class PixController {
             'net_amount' => $netAmount,
             'qrcode' => $acquirerResponse['data']['qrcode'] ?? null,
             'qrcode_base64' => $acquirerResponse['data']['qrcode_base64'] ?? null,
-            'pix_key' => $acquirerResponse['data']['pix_key'] ?? null,
             'expires_at' => $acquirerResponse['data']['expiration_date'] ?? date('Y-m-d H:i:s', strtotime("+{$expiresInMinutes} minutes")),
             'status' => $acquirerResponse['data']['status'] ?? 'pending'
         ], 'PIX transaction created successfully');
@@ -217,8 +215,8 @@ class PixController {
             'fee_amount' => $transaction['fee_amount'],
             'net_amount' => $transaction['net_amount'],
             'status' => $transaction['status'],
-            'pix_key' => $transaction['pix_key'],
             'qrcode' => $transaction['qrcode'],
+            'qrcode_base64' => $transaction['qrcode_base64'],
             'paid_at' => $transaction['paid_at'],
             'expires_at' => $transaction['expires_at'],
             'created_at' => $transaction['created_at']

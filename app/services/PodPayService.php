@@ -75,13 +75,21 @@ class PodPayService {
                     'response_time' => $responseTime
                 ]);
 
+                // Get QR code
+                $qrcode = $response['pix']['qrcode'] ?? null;
+                $qrcodeBase64 = $response['pix']['qrcodeBase64'] ?? null;
+
+                // If base64 not provided by acquirer, generate it
+                if ($qrcode && !$qrcodeBase64) {
+                    $qrcodeBase64 = $this->generateQrCodeBase64($qrcode);
+                }
+
                 return [
                     'success' => true,
                     'data' => [
                         'acquirer_transaction_id' => $response['id'],
-                        'qrcode' => $response['pix']['qrcode'] ?? null,
-                        'qrcode_base64' => $response['pix']['qrcodeBase64'] ?? null,
-                        'pix_key' => $response['pix']['key'] ?? null,
+                        'qrcode' => $qrcode,
+                        'qrcode_base64' => $qrcodeBase64,
                         'expiration_date' => $response['pix']['expirationDate'] ?? null,
                         'status' => $response['status'] ?? 'waiting_payment',
                         'amount' => $response['amount'] / 100,
@@ -394,5 +402,30 @@ class PodPayService {
         ];
 
         return $statusMap[$podpayStatus] ?? 'processing';
+    }
+
+    private function generateQrCodeBase64($qrcodeString) {
+        try {
+            // Use Google Charts API to generate QR code
+            $size = 300;
+            $url = "https://chart.googleapis.com/chart?cht=qr&chs={$size}x{$size}&chl=" . urlencode($qrcodeString);
+
+            $imageData = @file_get_contents($url);
+
+            if ($imageData === false) {
+                $this->logModel->warning('podpay', 'Failed to generate QR code image', [
+                    'qrcode_length' => strlen($qrcodeString)
+                ]);
+                return null;
+            }
+
+            return base64_encode($imageData);
+
+        } catch (Exception $e) {
+            $this->logModel->error('podpay', 'Error generating QR code base64', [
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 }
