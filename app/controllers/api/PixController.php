@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../services/SplitService.php';
 require_once __DIR__ . '/../../services/WebhookService.php';
 require_once __DIR__ . '/../../models/PixCashin.php';
 require_once __DIR__ . '/../../models/Seller.php';
+require_once __DIR__ . '/../../models/Acquirer.php';
 require_once __DIR__ . '/../../models/Log.php';
 
 class PixController {
@@ -17,6 +18,7 @@ class PixController {
     private $webhookService;
     private $pixCashinModel;
     private $sellerModel;
+    private $acquirerModel;
     private $logModel;
 
     public function __construct() {
@@ -27,6 +29,7 @@ class PixController {
         $this->webhookService = new WebhookService();
         $this->pixCashinModel = new PixCashin();
         $this->sellerModel = new Seller();
+        $this->acquirerModel = new Acquirer();
         $this->logModel = new Log();
     }
 
@@ -89,7 +92,7 @@ class PixController {
             errorResponse('No acquirer available at the moment', 503);
         }
 
-        $feeAmount = calculateFee($amount, $seller['fee_percentage'], $seller['fee_fixed']);
+        $feeAmount = calculateFee($amount, $seller['fee_percentage_cashin'], $seller['fee_fixed_cashin']);
         $netAmount = calculateNetAmount($amount, $feeAmount);
 
         $transactionId = generateTransactionId('CASHIN');

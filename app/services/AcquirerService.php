@@ -22,15 +22,22 @@ class AcquirerService {
         ]);
 
         try {
-            $payload = [
-                'transaction_id' => $data['transaction_id'],
-                'amount' => $data['amount'],
-                'pix_type' => $data['pix_type'] ?? 'dynamic',
-                'expires_at' => $data['expires_at'] ?? null,
-                'metadata' => $data['metadata'] ?? []
-            ];
+            if ($acquirer['code'] === 'podpay') {
+                require_once __DIR__ . '/PodPayService.php';
+                $podpay = new PodPayService($acquirer);
 
-            $response = $this->sendRequest($acquirer, '/pix/cashin', $payload);
+                $response = $podpay->createPixTransaction($data);
+            } else {
+                $payload = [
+                    'transaction_id' => $data['transaction_id'],
+                    'amount' => $data['amount'],
+                    'pix_type' => $data['pix_type'] ?? 'dynamic',
+                    'expires_at' => $data['expires_at'] ?? null,
+                    'metadata' => $data['metadata'] ?? []
+                ];
+
+                $response = $this->sendRequest($acquirer, '/pix/cashin', $payload);
+            }
 
             $responseTime = (microtime(true) - $startTime) * 1000;
             $this->acquirerModel->updateAvgResponseTime($acquirer['id'], $responseTime);
@@ -73,16 +80,23 @@ class AcquirerService {
         ]);
 
         try {
-            $payload = [
-                'transaction_id' => $data['transaction_id'],
-                'amount' => $data['amount'],
-                'pix_key' => $data['pix_key'],
-                'pix_key_type' => $data['pix_key_type'],
-                'beneficiary_name' => $data['beneficiary_name'],
-                'beneficiary_document' => $data['beneficiary_document']
-            ];
+            if ($acquirer['code'] === 'podpay') {
+                require_once __DIR__ . '/PodPayService.php';
+                $podpay = new PodPayService($acquirer);
 
-            $response = $this->sendRequest($acquirer, '/pix/cashout', $payload);
+                $response = $podpay->createTransfer($data);
+            } else {
+                $payload = [
+                    'transaction_id' => $data['transaction_id'],
+                    'amount' => $data['amount'],
+                    'pix_key' => $data['pix_key'],
+                    'pix_key_type' => $data['pix_key_type'],
+                    'beneficiary_name' => $data['beneficiary_name'],
+                    'beneficiary_document' => $data['beneficiary_document']
+                ];
+
+                $response = $this->sendRequest($acquirer, '/pix/cashout', $payload);
+            }
 
             $responseTime = (microtime(true) - $startTime) * 1000;
             $this->acquirerModel->updateAvgResponseTime($acquirer['id'], $responseTime);
