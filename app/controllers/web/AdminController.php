@@ -643,7 +643,7 @@ class AdminController {
             'retention_reason' => $retentionReason
         ];
 
-        if ($balanceRetention || $revenueRetentionPercentage > 0) {
+        if ($balanceRetention && $revenueRetentionPercentage > 0) {
             if (!$seller['retention_started_at']) {
                 $updateData['retention_started_at'] = date('Y-m-d H:i:s');
                 $updateData['retention_started_by'] = $_SESSION['user_id'];

@@ -246,7 +246,7 @@ $statusColors = [
                             <label class="block text-sm font-medium text-slate-300 mb-2">Motivo da Retenção</label>
                             <textarea name="retention_reason" rows="2" class="w-full px-4 py-2.5" placeholder="Descreva o motivo da retenção..."><?= htmlspecialchars($seller['retention_reason'] ?? '') ?></textarea>
                         </div>
-                        <?php if ($seller['balance_retention'] || $seller['revenue_retention_percentage'] > 0): ?>
+                        <?php if ($seller['balance_retention'] && $seller['revenue_retention_percentage'] > 0): ?>
                         <div class="bg-yellow-900/20 border border-yellow-700 rounded-lg p-3">
                             <p class="text-yellow-400 text-xs font-medium mb-1">
                                 <i class="fas fa-exclamation-triangle mr-1"></i>Retenção Ativa
