@@ -206,4 +206,24 @@ class PixCashin extends BaseModel {
 
         return $stmt->fetchAll();
     }
+
+    public function getStatsBySeller($sellerId) {
+        $sql = "
+            SELECT
+                COUNT(*) as total_transactions,
+                COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_paid,
+                COALESCE(SUM(CASE WHEN status = 'waiting_payment' THEN amount ELSE 0 END), 0) as total_pending,
+                COUNT(CASE WHEN status = 'paid' THEN 1 END) as count_paid,
+                COUNT(CASE WHEN status = 'waiting_payment' THEN 1 END) as count_pending,
+                COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as count_cancelled,
+                COUNT(CASE WHEN status = 'expired' THEN 1 END) as count_expired
+            FROM {$this->table}
+            WHERE seller_id = ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sellerId]);
+
+        return $stmt->fetch();
+    }
 }

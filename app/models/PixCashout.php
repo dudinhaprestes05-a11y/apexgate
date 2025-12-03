@@ -203,4 +203,24 @@ class PixCashout extends BaseModel {
 
         return $stmt->fetchAll();
     }
+
+    public function getStatsBySeller($sellerId) {
+        $sql = "
+            SELECT
+                COUNT(*) as total_transactions,
+                COALESCE(SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END), 0) as total_completed,
+                COALESCE(SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END), 0) as total_pending,
+                COUNT(CASE WHEN status = 'completed' THEN 1 END) as count_completed,
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) as count_pending,
+                COUNT(CASE WHEN status = 'failed' THEN 1 END) as count_failed,
+                COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as count_cancelled
+            FROM {$this->table}
+            WHERE seller_id = ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sellerId]);
+
+        return $stmt->fetch();
+    }
 }
