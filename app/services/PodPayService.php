@@ -406,9 +406,9 @@ class PodPayService {
 
     private function generateQrCodeBase64($qrcodeString) {
         try {
-            // Use Google Charts API to generate QR code
+            // Use QR Server API (free and reliable alternative)
             $size = 300;
-            $url = "https://chart.googleapis.com/chart?cht=qr&chs={$size}x{$size}&chl=" . urlencode($qrcodeString);
+            $url = "https://api.qrserver.com/v1/create-qr-code/?size={$size}x{$size}&data=" . urlencode($qrcodeString);
 
             $ch = curl_init($url);
             curl_setopt_array($ch, [
