@@ -2,342 +2,386 @@
 $pageTitle = 'Detalhes do Seller';
 require_once __DIR__ . '/../../models/SellerDocument.php';
 require_once __DIR__ . '/../layouts/header.php';
+
+$statusColors = [
+    'active' => 'badge-success',
+    'pending' => 'badge-warning',
+    'inactive' => 'badge',
+    'blocked' => 'badge-danger',
+    'rejected' => 'badge-danger'
+];
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8 flex items-center justify-between">
-        <div>
-            <a href="/admin/sellers" class="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
-                <i class="fas fa-arrow-left mr-1"></i>Voltar
-            </a>
-            <h1 class="text-3xl font-bold text-gray-900"><?= htmlspecialchars($seller['name']) ?></h1>
-            <p class="text-gray-600 mt-2"><?= htmlspecialchars($seller['email']) ?></p>
-        </div>
-        <div>
-            <span class="px-4 py-2 rounded-lg text-sm font-medium
-                <?php
-                echo match($seller['status']) {
-                    'active' => 'bg-green-100 text-green-800',
-                    'pending' => 'bg-yellow-100 text-yellow-800',
-                    'inactive' => 'bg-gray-100 text-gray-800',
-                    'blocked' => 'bg-red-100 text-red-800',
-                    'rejected' => 'bg-red-100 text-red-800',
-                    default => 'bg-gray-100 text-gray-800'
-                };
-                ?>">
+<!-- Header -->
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <a href="/admin/sellers" class="text-blue-400 hover:text-blue-300 text-sm mb-3 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Voltar
+        </a>
+        <h2 class="text-3xl font-bold text-white mt-2 flex items-center">
+            <?= htmlspecialchars($seller['name']) ?>
+            <span class="badge <?= $statusColors[$seller['status']] ?? 'badge' ?> ml-3 text-sm">
                 <?= ucfirst($seller['status']) ?>
             </span>
-        </div>
+        </h2>
+        <p class="text-slate-400 mt-1"><?= htmlspecialchars($seller['email']) ?></p>
     </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-gray-600 text-sm font-medium">Saldo</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">R$ <?= number_format($seller['balance'], 2, ',', '.') ?></p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-gray-600 text-sm font-medium">Total Recebido</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">R$ <?= number_format($cashinStats['total'] ?? 0, 2, ',', '.') ?></p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <p class="text-gray-600 text-sm font-medium">Total Sacado</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">R$ <?= number_format($cashoutStats['total'] ?? 0, 2, ',', '.') ?></p>
-        </div>
+    <?php if ($seller['status'] === 'pending'): ?>
+    <div class="flex space-x-3">
+        <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/approve" class="inline">
+            <button type="submit" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition">
+                <i class="fas fa-check mr-2"></i>Aprovar
+            </button>
+        </form>
+        <button onclick="openRejectModal()" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+            <i class="fas fa-times mr-2"></i>Rejeitar
+        </button>
     </div>
+    <?php endif; ?>
+</div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Informações</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">ID</label>
-                        <p class="text-gray-900 mt-1">#<?= $seller['id'] ?></p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Tipo de Pessoa</label>
-                        <p class="text-gray-900 mt-1"><?= $seller['person_type'] === 'individual' ? 'Pessoa Física' : 'Pessoa Jurídica' ?></p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Documento</label>
-                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['document']) ?></p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Telefone</label>
-                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['phone'] ?? 'Não informado') ?></p>
-                    </div>
-                    <?php if ($seller['person_type'] === 'business'): ?>
-                    <div class="col-span-2">
-                        <label class="text-sm font-medium text-gray-600">Razão Social</label>
-                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['company_name'] ?? 'Não informado') ?></p>
-                    </div>
-                    <?php if ($seller['trading_name']): ?>
-                    <div class="col-span-2">
-                        <label class="text-sm font-medium text-gray-600">Nome Fantasia</label>
-                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['trading_name']) ?></p>
-                    </div>
-                    <?php endif; ?>
-                    <?php endif; ?>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Cadastro</label>
-                        <p class="text-gray-900 mt-1"><?= date('d/m/Y H:i', strtotime($seller['created_at'])) ?></p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Última Atualização</label>
-                        <p class="text-gray-900 mt-1"><?= date('d/m/Y H:i', strtotime($seller['updated_at'])) ?></p>
-                    </div>
-                </div>
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="stat-icon w-12 h-12 rounded-xl flex items-center justify-center">
+                <i class="fas fa-wallet text-white text-xl"></i>
             </div>
+        </div>
+        <p class="text-slate-400 text-sm mb-1">Saldo Disponível</p>
+        <p class="text-3xl font-bold text-white">R$ <?= number_format($seller['balance'], 2, ',', '.') ?></p>
+    </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Documentos Obrigatórios</h2>
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600">
+                <i class="fas fa-arrow-down text-white text-xl"></i>
+            </div>
+        </div>
+        <p class="text-slate-400 text-sm mb-1">Total Cash-in</p>
+        <p class="text-3xl font-bold text-white">R$ <?= number_format($cashinStats['total'] ?? 0, 2, ',', '.') ?></p>
+    </div>
 
-                <?php
-                $documentModel = new SellerDocument();
-                $requiredDocs = $documentModel->getRequiredDocumentTypes($seller['person_type']);
-                $documentsByType = [];
-                foreach ($documents as $doc) {
-                    $documentsByType[$doc['document_type']] = $doc;
-                }
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-red-600">
+                <i class="fas fa-arrow-up text-white text-xl"></i>
+            </div>
+        </div>
+        <p class="text-slate-400 text-sm mb-1">Total Cash-out</p>
+        <p class="text-3xl font-bold text-white">R$ <?= number_format($cashoutStats['total'] ?? 0, 2, ',', '.') ?></p>
+    </div>
+</div>
 
-                $docLabels = [
-                    'rg_front' => 'RG Frente',
-                    'rg_back' => 'RG Verso',
-                    'cpf' => 'CPF',
-                    'selfie' => 'Selfie com Documento',
-                    'proof_address' => 'Comprovante de Endereço',
-                    'social_contract' => 'Contrato Social',
-                    'cnpj' => 'Cartão CNPJ',
-                    'partner_docs' => 'Documentos dos Sócios'
-                ];
-
-                $allApproved = true;
-                $hasPending = false;
-                foreach ($requiredDocs as $docType) {
-                    if (!isset($documentsByType[$docType]) || $documentsByType[$docType]['status'] !== 'approved') {
-                        $allApproved = false;
-                    }
-                    if (isset($documentsByType[$docType]) && $documentsByType[$docType]['status'] === 'pending') {
-                        $hasPending = true;
-                    }
-                }
-                ?>
-
-                <div class="space-y-3 mb-6">
-                    <?php foreach ($requiredDocs as $docType): ?>
-                    <?php
-                        $hasDoc = isset($documentsByType[$docType]);
-                        $doc = $hasDoc ? $documentsByType[$docType] : null;
-                        $status = $hasDoc ? $doc['status'] : 'missing';
-                    ?>
-                    <div class="flex items-center justify-between p-3 rounded-lg border
-                        <?php
-                        echo match($status) {
-                            'approved' => 'border-green-200 bg-green-50',
-                            'pending' => 'border-yellow-200 bg-yellow-50',
-                            'under_review' => 'border-blue-200 bg-blue-50',
-                            'rejected' => 'border-red-200 bg-red-50',
-                            'missing' => 'border-gray-200 bg-gray-50'
-                        };
-                        ?>">
-                        <div class="flex items-center space-x-3">
-                            <i class="fas
-                                <?php
-                                echo match($status) {
-                                    'approved' => 'fa-check-circle text-green-600',
-                                    'pending' => 'fa-clock text-yellow-600',
-                                    'under_review' => 'fa-eye text-blue-600',
-                                    'rejected' => 'fa-times-circle text-red-600',
-                                    'missing' => 'fa-exclamation-circle text-gray-400'
-                                };
-                                ?>"></i>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900"><?= $docLabels[$docType] ?? ucfirst(str_replace('_', ' ', $docType)) ?></p>
-                                <?php if ($hasDoc): ?>
-                                    <p class="text-xs text-gray-600"><?= date('d/m/Y H:i', strtotime($doc['created_at'])) ?></p>
-                                <?php else: ?>
-                                    <p class="text-xs text-gray-500">Não enviado</p>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <?php if ($hasDoc): ?>
-                                <button onclick="viewDocument(<?= $doc['id'] ?>)" class="px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition">
-                                    <i class="fas fa-eye mr-1"></i>Ver
-                                </button>
-                                <?php if ($status === 'pending' || $status === 'under_review'): ?>
-                                <button onclick="approveDocument(<?= $doc['id'] ?>)" class="px-3 py-1 text-xs font-medium text-green-600 hover:bg-green-100 rounded-lg transition">
-                                    <i class="fas fa-check mr-1"></i>Aprovar
-                                </button>
-                                <button onclick="rejectDocument(<?= $doc['id'] ?>)" class="px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100 rounded-lg transition">
-                                    <i class="fas fa-times mr-1"></i>Rejeitar
-                                </button>
-                                <?php endif; ?>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column - 2/3 width -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Information Card -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                Informações do Seller
+            </h3>
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="text-sm font-medium text-slate-400">ID</label>
+                    <p class="text-white mt-1 font-semibold">#<?= $seller['id'] ?></p>
                 </div>
-
-                <?php if ($allApproved): ?>
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                        <div>
-                            <p class="text-sm font-medium text-green-900">Todos os documentos aprovados</p>
-                            <p class="text-xs text-green-700 mt-1">Este seller está pronto para ser aprovado</p>
-                        </div>
-                    </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Tipo de Pessoa</label>
+                    <p class="text-white mt-1"><?= $seller['person_type'] === 'individual' ? 'Pessoa Física' : 'Pessoa Jurídica' ?></p>
                 </div>
-                <?php elseif ($hasPending): ?>
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-clock text-yellow-600 mr-3"></i>
-                        <div>
-                            <p class="text-sm font-medium text-yellow-900">Documentos pendentes de análise</p>
-                            <p class="text-xs text-yellow-700 mt-1">Analise todos os documentos antes de aprovar o seller</p>
-                        </div>
-                    </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Documento</label>
+                    <p class="text-white mt-1 font-mono"><?= htmlspecialchars($seller['document']) ?></p>
                 </div>
-                <?php else: ?>
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-info-circle text-gray-600 mr-3"></i>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">Aguardando documentos</p>
-                            <p class="text-xs text-gray-700 mt-1">O seller ainda precisa enviar alguns documentos</p>
-                        </div>
-                    </div>
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Telefone</label>
+                    <p class="text-white mt-1"><?= htmlspecialchars($seller['phone'] ?? 'Não informado') ?></p>
+                </div>
+                <?php if ($seller['person_type'] === 'business'): ?>
+                <div class="col-span-2">
+                    <label class="text-sm font-medium text-slate-400">Razão Social</label>
+                    <p class="text-white mt-1"><?= htmlspecialchars($seller['company_name'] ?? 'Não informado') ?></p>
+                </div>
+                <?php if ($seller['trading_name']): ?>
+                <div class="col-span-2">
+                    <label class="text-sm font-medium text-slate-400">Nome Fantasia</label>
+                    <p class="text-white mt-1"><?= htmlspecialchars($seller['trading_name']) ?></p>
+                </div>
+                <?php endif; ?>
+                <?php endif; ?>
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Cadastro</label>
+                    <p class="text-white mt-1"><?= date('d/m/Y H:i', strtotime($seller['created_at'])) ?></p>
+                </div>
+                <?php if ($seller['approved_at']): ?>
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Aprovado em</label>
+                    <p class="text-white mt-1"><?= date('d/m/Y H:i', strtotime($seller['approved_at'])) ?></p>
                 </div>
                 <?php endif; ?>
             </div>
-
-            <?php if (!empty($recentTransactions)): ?>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Transações Recentes</h2>
-                <div class="space-y-3">
-                    <?php foreach ($recentTransactions as $tx): ?>
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-medium text-gray-900">R$ <?= number_format($tx['amount'], 2, ',', '.') ?></p>
-                            <p class="text-xs text-gray-600"><?= date('d/m/Y H:i', strtotime($tx['created_at'])) ?></p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <?= ucfirst($tx['status']) ?>
-                        </span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endif; ?>
         </div>
 
-        <div class="space-y-6">
-            <?php if ($seller['status'] === 'pending'): ?>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Ações</h3>
-                <div class="space-y-3">
-                    <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/approve" onsubmit="return confirm('Tem certeza que deseja aprovar este seller?')">
-                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition">
-                            <i class="fas fa-check mr-2"></i>Aprovar Seller
-                        </button>
-                    </form>
-                    <button onclick="showRejectModal()" class="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition">
-                        <i class="fas fa-times mr-2"></i>Rejeitar Seller
+        <!-- Fees Configuration Card -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-percentage text-yellow-500 mr-2"></i>
+                Configuração de Taxas
+            </h3>
+            <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/fees" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Cash-in Fees -->
+                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                        <h4 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <i class="fas fa-arrow-down text-green-500 mr-2"></i>
+                            Taxas Cash-in
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    Taxa Percentual (%)
+                                </label>
+                                <div class="relative">
+                                    <input type="number"
+                                           name="fee_percentage_cashin"
+                                           value="<?= $seller['fee_percentage_cashin'] * 100 ?>"
+                                           step="0.01"
+                                           min="0"
+                                           max="15"
+                                           class="w-full px-4 py-2.5 pr-8"
+                                           required>
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Atual: <?= number_format($seller['fee_percentage_cashin'] * 100, 2) ?>%</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    Taxa Fixa (R$)
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">R$</span>
+                                    <input type="number"
+                                           name="fee_fixed_cashin"
+                                           value="<?= $seller['fee_fixed_cashin'] ?>"
+                                           step="0.01"
+                                           min="0"
+                                           class="w-full px-4 py-2.5 pl-11"
+                                           required>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Atual: R$ <?= number_format($seller['fee_fixed_cashin'], 2, ',', '.') ?></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cash-out Fees -->
+                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                        <h4 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <i class="fas fa-arrow-up text-red-500 mr-2"></i>
+                            Taxas Cash-out
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    Taxa Percentual (%)
+                                </label>
+                                <div class="relative">
+                                    <input type="number"
+                                           name="fee_percentage_cashout"
+                                           value="<?= $seller['fee_percentage_cashout'] * 100 ?>"
+                                           step="0.01"
+                                           min="0"
+                                           max="15"
+                                           class="w-full px-4 py-2.5 pr-8"
+                                           required>
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">%</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Atual: <?= number_format($seller['fee_percentage_cashout'] * 100, 2) ?>%</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-300 mb-2">
+                                    Taxa Fixa (R$)
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">R$</span>
+                                    <input type="number"
+                                           name="fee_fixed_cashout"
+                                           value="<?= $seller['fee_fixed_cashout'] ?>"
+                                           step="0.01"
+                                           min="0"
+                                           class="w-full px-4 py-2.5 pl-11"
+                                           required>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Atual: R$ <?= number_format($seller['fee_fixed_cashout'], 2, ',', '.') ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700">
+                    <div class="text-sm text-slate-400">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        As taxas são aplicadas automaticamente em todas as transações
+                    </div>
+                    <button type="submit" class="btn-primary px-6 py-2.5 rounded-lg font-medium">
+                        <i class="fas fa-save mr-2"></i>Salvar Taxas
                     </button>
                 </div>
-            </div>
-            <?php endif; ?>
+            </form>
+        </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Taxas</h3>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Cash-in</span>
-                        <span class="text-sm font-medium text-gray-900"><?= number_format($seller['fee_percentage_cashin'] * 100, 2) ?>%</span>
+        <!-- Recent Transactions -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-between">
+                <span>
+                    <i class="fas fa-history text-purple-500 mr-2"></i>
+                    Transações Recentes
+                </span>
+                <a href="/admin/transactions?seller_id=<?= $seller['id'] ?>" class="text-blue-400 hover:text-blue-300 text-sm">
+                    Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </h3>
+            <div class="space-y-3">
+                <?php if (empty($recentTransactions)): ?>
+                    <div class="text-center py-12">
+                        <i class="fas fa-receipt text-5xl text-slate-600 mb-3"></i>
+                        <p class="text-slate-400">Nenhuma transação ainda</p>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Cash-out</span>
-                        <span class="text-sm font-medium text-gray-900"><?= number_format($seller['fee_percentage_cashout'] * 100, 2) ?>%</span>
+                <?php else: ?>
+                    <?php foreach (array_slice($recentTransactions, 0, 10) as $tx): ?>
+                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700 hover:border-blue-500 transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white font-bold text-lg">R$ <?= number_format($tx['amount'], 2, ',', '.') ?></p>
+                                <p class="text-sm text-slate-400"><?= $tx['transaction_id'] ?></p>
+                            </div>
+                            <div class="text-right">
+                                <?php
+                                $badgeClass = 'badge-info';
+                                if (in_array($tx['status'] ?? '', ['paid', 'approved', 'completed', 'COMPLETED'])) {
+                                    $badgeClass = 'badge-success';
+                                } elseif (in_array($tx['status'] ?? '', ['waiting_payment', 'pending', 'PENDING_QUEUE'])) {
+                                    $badgeClass = 'badge-warning';
+                                } elseif (in_array($tx['status'] ?? '', ['failed', 'cancelled', 'refused'])) {
+                                    $badgeClass = 'badge-danger';
+                                }
+                                ?>
+                                <span class="badge <?= $badgeClass ?>"><?= ucfirst($tx['status'] ?? 'Unknown') ?></span>
+                                <p class="text-xs text-slate-500 mt-1"><?= date('d/m H:i', strtotime($tx['created_at'])) ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - 1/3 width -->
+    <div class="space-y-6">
+        <!-- API Credentials -->
+        <?php if ($seller['api_key']): ?>
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-key text-blue-500 mr-2"></i>
+                Credenciais API
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm font-medium text-slate-400">API Key</label>
+                    <div class="mt-2 flex items-center space-x-2">
+                        <code class="flex-1 px-3 py-2 bg-slate-900 text-slate-300 rounded text-xs font-mono break-all"><?= htmlspecialchars($seller['api_key']) ?></code>
+                        <button onclick="copyToClipboard('<?= $seller['api_key'] ?>', this)" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+        <?php endif; ?>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Limites</h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-sm text-gray-600">Limite Diário</span>
-                            <span class="text-sm font-medium text-gray-900">R$ <?= number_format($seller['daily_limit'], 2, ',', '.') ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <?php $percentage = ($seller['daily_used'] / $seller['daily_limit']) * 100; ?>
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: <?= min($percentage, 100) ?>%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Usado: R$ <?= number_format($seller['daily_used'], 2, ',', '.') ?></p>
+        <!-- Limits -->
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                Limites
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-slate-400">Limite Diário</span>
+                        <span class="text-sm font-bold text-white">R$ <?= number_format($seller['daily_limit'], 0, ',', '.') ?></span>
                     </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style="width: <?= min(100, ($seller['daily_used'] / $seller['daily_limit']) * 100) ?>%"></div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">Utilizado: R$ <?= number_format($seller['daily_used'], 2, ',', '.') ?></p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                <span>
+                    <i class="fas fa-file-alt text-purple-500 mr-2"></i>
+                    Documentos
+                </span>
+                <span class="badge badge-<?= $seller['document_status'] === 'approved' ? 'success' : 'warning' ?>">
+                    <?= ucfirst($seller['document_status']) ?>
+                </span>
+            </h3>
+            <div class="space-y-3">
+                <?php if (empty($documents)): ?>
+                    <p class="text-slate-400 text-sm">Nenhum documento enviado</p>
+                <?php else: ?>
+                    <?php foreach ($documents as $doc): ?>
+                    <div class="p-3 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-sm text-white font-medium"><?= ucfirst(str_replace('_', ' ', $doc['document_type'])) ?></p>
+                                <p class="text-xs text-slate-500"><?= date('d/m/Y', strtotime($doc['created_at'])) ?></p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <?php
+                                $docBadgeClass = match($doc['status']) {
+                                    'approved' => 'badge-success',
+                                    'rejected' => 'badge-danger',
+                                    'under_review' => 'badge-warning',
+                                    default => 'badge-info'
+                                };
+                                ?>
+                                <span class="badge <?= $docBadgeClass ?> text-xs"><?= ucfirst($doc['status']) ?></span>
+                                <a href="/admin/documents/view/<?= $doc['id'] ?>" class="text-blue-400 hover:text-blue-300">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Rejeitar Seller</h3>
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
+    <div class="card p-8 max-w-md w-full mx-4">
+        <h3 class="text-2xl font-bold text-white mb-4">Rejeitar Seller</h3>
         <form method="POST" action="/admin/sellers/<?= $seller['id'] ?>/reject">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Motivo da Rejeição</label>
-                <textarea name="reason" required rows="4"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="Explique o motivo da rejeição..."></textarea>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Motivo da Rejeição</label>
+                <textarea name="reason" rows="4" class="w-full px-4 py-2.5" required placeholder="Digite o motivo da rejeição..."></textarea>
             </div>
-            <div class="flex items-center gap-3">
-                <button type="button" onclick="hideRejectModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
                     Cancelar
                 </button>
-                <button type="submit" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition">
-                    Rejeitar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="documentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-gray-900" id="documentModalTitle">Documento</h3>
-            <button onclick="hideDocumentModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div class="p-6" id="documentModalContent">
-            <div class="text-center py-8">
-                <i class="fas fa-spinner fa-spin text-gray-400 text-4xl"></i>
-                <p class="text-gray-600 mt-4">Carregando...</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="rejectDocModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Rejeitar Documento</h3>
-        <form id="rejectDocForm" method="POST">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Motivo da Rejeição</label>
-                <textarea name="reason" required rows="4"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="Ex: Foto desfocada, documento ilegível, etc."></textarea>
-            </div>
-            <div class="flex items-center gap-3">
-                <button type="button" onclick="hideRejectDocModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition">
-                    Cancelar
-                </button>
-                <button type="submit" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition">
-                    Rejeitar
+                <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+                    <i class="fas fa-times mr-2"></i>Rejeitar
                 </button>
             </div>
         </form>
@@ -345,159 +389,14 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
 
 <script>
-let currentDocumentId = null;
-
-const documentData = <?= json_encode(array_values($documentsByType ?? [])) ?>;
-
-function showRejectModal() {
+function openRejectModal() {
     document.getElementById('rejectModal').classList.remove('hidden');
     document.getElementById('rejectModal').classList.add('flex');
 }
 
-function hideRejectModal() {
+function closeRejectModal() {
     document.getElementById('rejectModal').classList.add('hidden');
     document.getElementById('rejectModal').classList.remove('flex');
-}
-
-function viewDocument(documentId) {
-    currentDocumentId = documentId;
-    const modal = document.getElementById('documentModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    fetch(`/admin/documents/view/${documentId}`)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const content = doc.querySelector('.max-w-4xl');
-
-            if (content) {
-                const title = doc.querySelector('h1');
-                document.getElementById('documentModalTitle').innerHTML = title ? title.textContent : 'Documento';
-                document.getElementById('documentModalContent').innerHTML = content.innerHTML;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading document:', error);
-            document.getElementById('documentModalContent').innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fas fa-exclamation-triangle text-red-400 text-4xl"></i>
-                    <p class="text-red-600 mt-4">Erro ao carregar documento</p>
-                </div>
-            `;
-        });
-}
-
-function hideDocumentModal() {
-    document.getElementById('documentModal').classList.add('hidden');
-    document.getElementById('documentModal').classList.remove('flex');
-}
-
-function approveDocument(documentId) {
-    if (!confirm('Tem certeza que deseja aprovar este documento?')) {
-        return;
-    }
-
-    const form = new FormData();
-
-    fetch(`/admin/documents/${documentId}/approve`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: form
-    })
-    .then(response => {
-        if (response.ok) {
-            hideDocumentModal();
-            showSuccessMessage('Documento aprovado com sucesso!');
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        } else {
-            showErrorMessage('Erro ao aprovar documento');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorMessage('Erro ao aprovar documento');
-    });
-}
-
-function rejectDocument(documentId) {
-    currentDocumentId = documentId;
-    document.getElementById('rejectDocForm').action = `/admin/documents/${documentId}/reject`;
-    document.getElementById('rejectDocModal').classList.remove('hidden');
-    document.getElementById('rejectDocModal').classList.add('flex');
-}
-
-function hideRejectDocModal() {
-    document.getElementById('rejectDocModal').classList.add('hidden');
-    document.getElementById('rejectDocModal').classList.remove('flex');
-}
-
-document.getElementById('rejectDocForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const formData = new FormData(this);
-    const documentId = currentDocumentId;
-
-    fetch(`/admin/documents/${documentId}/reject`, {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: formData
-    })
-    .then(response => {
-        if (response.ok) {
-            hideRejectDocModal();
-            hideDocumentModal();
-            showSuccessMessage('Documento rejeitado');
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        } else {
-            showErrorMessage('Erro ao rejeitar documento');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorMessage('Erro ao rejeitar documento');
-    });
-});
-
-function showSuccessMessage(message) {
-    const alert = document.createElement('div');
-    alert.className = 'fixed top-4 right-4 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg z-50 fade-in';
-    alert.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-check-circle mr-3"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(alert);
-
-    setTimeout(() => {
-        alert.remove();
-    }, 3000);
-}
-
-function showErrorMessage(message) {
-    const alert = document.createElement('div');
-    alert.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-lg z-50 fade-in';
-    alert.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-circle mr-3"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    document.body.appendChild(alert);
-
-    setTimeout(() => {
-        alert.remove();
-    }, 3000);
 }
 </script>
 

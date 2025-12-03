@@ -551,6 +551,64 @@ class AdminController {
         exit;
     }
 
+    public function updateSellerFees($sellerId) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($sellerId);
+
+        if (!$seller) {
+            $_SESSION['error'] = 'Seller não encontrado';
+            header('Location: /admin/sellers');
+            exit;
+        }
+
+        $feePercentageCashin = floatval($_POST['fee_percentage_cashin'] ?? 0);
+        $feeFixedCashin = floatval($_POST['fee_fixed_cashin'] ?? 0);
+        $feePercentageCashout = floatval($_POST['fee_percentage_cashout'] ?? 0);
+        $feeFixedCashout = floatval($_POST['fee_fixed_cashout'] ?? 0);
+
+        if ($feePercentageCashin < 0 || $feePercentageCashin > 0.15) {
+            $_SESSION['error'] = 'Taxa percentual de cash-in deve estar entre 0% e 15%';
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        if ($feePercentageCashout < 0 || $feePercentageCashout > 0.15) {
+            $_SESSION['error'] = 'Taxa percentual de cash-out deve estar entre 0% e 15%';
+            header('Location: /admin/sellers/view/' . $sellerId);
+            exit;
+        }
+
+        $this->sellerModel->update($sellerId, [
+            'fee_percentage_cashin' => $feePercentageCashin,
+            'fee_fixed_cashin' => $feeFixedCashin,
+            'fee_percentage_cashout' => $feePercentageCashout,
+            'fee_fixed_cashout' => $feeFixedCashout
+        ]);
+
+        $this->logModel->create([
+            'level' => 'info',
+            'category' => 'admin',
+            'message' => 'Taxas atualizadas para seller ID ' . $sellerId,
+            'context' => json_encode([
+                'seller_id' => $sellerId,
+                'fee_percentage_cashin' => $feePercentageCashin,
+                'fee_fixed_cashin' => $feeFixedCashin,
+                'fee_percentage_cashout' => $feePercentageCashout,
+                'fee_fixed_cashout' => $feeFixedCashout,
+                'updated_by' => $_SESSION['user_id']
+            ]),
+            'user_id' => $_SESSION['user_id']
+        ]);
+
+        $_SESSION['success'] = 'Taxas atualizadas com sucesso!';
+        header('Location: /admin/sellers/view/' . $sellerId);
+        exit;
+    }
+
     public function logs() {
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $perPage = 50;

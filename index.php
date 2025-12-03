@@ -126,6 +126,11 @@ try {
         $controller = new AdminController();
         $controller->rejectSeller($matches[1]);
     }
+    elseif (preg_match('#^/admin/sellers/(\d+)/fees$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->updateSellerFees($matches[1]);
+    }
     elseif ($uri === '/admin/documents') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
