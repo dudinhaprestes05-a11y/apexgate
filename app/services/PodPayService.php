@@ -1,0 +1,381 @@
+<?php
+
+require_once __DIR__ . '/../models/Acquirer.php';
+require_once __DIR__ . '/../models/Log.php';
+
+class PodPayService {
+    private $acquirer;
+    private $logModel;
+    private $apiUrl;
+    private $authToken;
+    private $withdrawKey;
+
+    public function __construct($acquirer = null) {
+        $this->logModel = new Log();
+
+        if ($acquirer) {
+            $this->acquirer = $acquirer;
+            $this->apiUrl = rtrim($acquirer['api_url'], '/');
+
+            $config = json_decode($acquirer['config'], true) ?? [];
+            $this->authToken = base64_encode($acquirer['api_key'] . ':' . $acquirer['api_secret']);
+            $this->withdrawKey = $config['withdraw_key'] ?? null;
+        }
+    }
+
+    public function createPixTransaction($data) {
+        $startTime = microtime(true);
+
+        $this->logModel->info('podpay', 'Creating PIX transaction', [
+            'transaction_id' => $data['transaction_id'],
+            'amount' => $data['amount']
+        ]);
+
+        try {
+            $webhookUrl = BASE_URL . '/api/webhook/acquirer?acquirer=' . $this->acquirer['code'];
+
+            $payload = [
+                'amount' => (int)($data['amount'] * 100),
+                'currency' => 'BRL',
+                'paymentMethod' => 'pix',
+                'items' => [
+                    [
+                        'title' => $data['title'] ?? 'Recebimento PIX',
+                        'unitPrice' => (int)($data['amount'] * 100),
+                        'quantity' => 1,
+                        'tangible' => false
+                    ]
+                ],
+                'customer' => [
+                    'name' => $data['customer']['name'] ?? 'Cliente',
+                    'email' => $data['customer']['email'] ?? 'cliente@example.com',
+                    'document' => [
+                        'number' => preg_replace('/[^0-9]/', '', $data['customer']['document'] ?? '00000000000'),
+                        'type' => strlen(preg_replace('/[^0-9]/', '', $data['customer']['document'] ?? '')) === 11 ? 'cpf' : 'cnpj'
+                    ]
+                ],
+                'postbackUrl' => $webhookUrl
+            ];
+
+            if (isset($data['external_id'])) {
+                $payload['metadata'] = ['external_id' => $data['external_id']];
+            }
+
+            $response = $this->sendRequest('/v1/transactions', $payload, 'POST');
+
+            $responseTime = (microtime(true) - $startTime) * 1000;
+
+            if (isset($response['id'])) {
+                $acquirerModel = new Acquirer();
+                $acquirerModel->updateAvgResponseTime($this->acquirer['id'], $responseTime);
+
+                $this->logModel->info('podpay', 'PIX transaction created successfully', [
+                    'transaction_id' => $data['transaction_id'],
+                    'secure_id' => $response['id'],
+                    'response_time' => $responseTime
+                ]);
+
+                return [
+                    'success' => true,
+                    'data' => [
+                        'acquirer_transaction_id' => $response['id'],
+                        'qrcode' => $response['pix']['qrcode'] ?? null,
+                        'qrcode_base64' => $response['pix']['qrcodeBase64'] ?? null,
+                        'pix_key' => $response['pix']['key'] ?? null,
+                        'expiration_date' => $response['pix']['expirationDate'] ?? null,
+                        'status' => $response['status'] ?? 'waiting_payment',
+                        'amount' => $response['amount'] / 100,
+                        'raw_response' => $response
+                    ]
+                ];
+            } else {
+                throw new Exception('Invalid response from PodPay: ' . json_encode($response));
+            }
+
+        } catch (Exception $e) {
+            $this->logModel->error('podpay', 'Failed to create PIX transaction', [
+                'transaction_id' => $data['transaction_id'],
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function createTransfer($data) {
+        $startTime = microtime(true);
+
+        $this->logModel->info('podpay', 'Creating transfer', [
+            'transaction_id' => $data['transaction_id'],
+            'amount' => $data['amount']
+        ]);
+
+        try {
+            if (!$this->withdrawKey) {
+                throw new Exception('Withdraw key not configured for this acquirer');
+            }
+
+            $payload = [
+                'method' => 'fiat',
+                'amount' => (int)($data['amount'] * 100),
+                'pixKey' => $data['pix_key'],
+                'pixKeyType' => $data['pix_key_type'],
+                'netPayout' => $data['net_payout'] ?? true
+            ];
+
+            if (isset($data['external_id'])) {
+                $payload['metadata'] = ['external_id' => $data['external_id']];
+            }
+
+            $response = $this->sendRequest('/v1/transfers', $payload, 'POST', [
+                'x-withdraw-key' => $this->withdrawKey
+            ]);
+
+            $responseTime = (microtime(true) - $startTime) * 1000;
+
+            if (isset($response['id'])) {
+                $acquirerModel = new Acquirer();
+                $acquirerModel->updateAvgResponseTime($this->acquirer['id'], $responseTime);
+
+                $this->logModel->info('podpay', 'Transfer created successfully', [
+                    'transaction_id' => $data['transaction_id'],
+                    'transfer_id' => $response['id'],
+                    'response_time' => $responseTime
+                ]);
+
+                return [
+                    'success' => true,
+                    'data' => [
+                        'acquirer_transaction_id' => $response['id'],
+                        'amount' => $response['amount'] / 100,
+                        'net_amount' => $response['netAmount'] / 100,
+                        'fee' => $response['fee'] / 100,
+                        'status' => $response['status'] ?? 'PENDING_QUEUE',
+                        'pix_key' => $response['pixKey'] ?? $data['pix_key'],
+                        'pix_key_type' => $response['pixKeyType'] ?? $data['pix_key_type'],
+                        'raw_response' => $response
+                    ]
+                ];
+            } else {
+                throw new Exception('Invalid response from PodPay: ' . json_encode($response));
+            }
+
+        } catch (Exception $e) {
+            $this->logModel->error('podpay', 'Failed to create transfer', [
+                'transaction_id' => $data['transaction_id'],
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function consultTransaction($secureId) {
+        try {
+            $response = $this->sendRequest("/v1/transactions/{$secureId}", null, 'GET');
+
+            if (isset($response['id'])) {
+                return [
+                    'success' => true,
+                    'data' => [
+                        'secure_id' => $response['id'],
+                        'status' => $response['status'],
+                        'amount' => $response['amount'] / 100,
+                        'pix' => $response['pix'] ?? null,
+                        'raw_response' => $response
+                    ]
+                ];
+            } else {
+                throw new Exception('Transaction not found');
+            }
+
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function consultTransfer($transferId) {
+        try {
+            $response = $this->sendRequest("/v1/transfers/{$transferId}", null, 'GET', [
+                'x-withdraw-key' => $this->withdrawKey
+            ]);
+
+            if (isset($response['id'])) {
+                return [
+                    'success' => true,
+                    'data' => [
+                        'transfer_id' => $response['id'],
+                        'status' => $response['status'],
+                        'amount' => $response['amount'] / 100,
+                        'net_amount' => $response['netAmount'] / 100,
+                        'fee' => $response['fee'] / 100,
+                        'raw_response' => $response
+                    ]
+                ];
+            } else {
+                throw new Exception('Transfer not found');
+            }
+
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    private function sendRequest($endpoint, $payload = null, $method = 'POST', $additionalHeaders = []) {
+        $url = $this->apiUrl . $endpoint;
+
+        $ch = curl_init($url);
+
+        $headers = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            'Authorization: Basic ' . $this->authToken,
+            'User-Agent: Gateway-PIX/1.0'
+        ];
+
+        foreach ($additionalHeaders as $key => $value) {
+            $headers[] = $key . ': ' . $value;
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2
+        ]);
+
+        if ($method === 'POST') {
+            curl_setopt($ch, CURLOPT_POST, true);
+            if ($payload) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+            }
+        } elseif ($method === 'GET') {
+            curl_setopt($ch, CURLOPT_HTTPGET, true);
+        }
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($error) {
+            throw new Exception("cURL Error: {$error}");
+        }
+
+        if ($httpCode < 200 || $httpCode >= 300) {
+            $errorMessage = "HTTP {$httpCode}";
+            if ($response) {
+                $decoded = json_decode($response, true);
+                if (isset($decoded['message'])) {
+                    $errorMessage .= ": " . $decoded['message'];
+                } else {
+                    $errorMessage .= ": " . $response;
+                }
+            }
+            throw new Exception($errorMessage);
+        }
+
+        $decoded = json_decode($response, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Invalid JSON response from PodPay: {$response}");
+        }
+
+        return $decoded;
+    }
+
+    public function parseWebhook($payload) {
+        try {
+            if (!isset($payload['type'])) {
+                throw new Exception('Missing webhook type');
+            }
+
+            if ($payload['type'] === 'transaction') {
+                return $this->parseTransactionWebhook($payload);
+            } elseif ($payload['type'] === 'withdraw') {
+                return $this->parseWithdrawWebhook($payload);
+            } else {
+                throw new Exception('Unknown webhook type: ' . $payload['type']);
+            }
+
+        } catch (Exception $e) {
+            $this->logModel->error('podpay', 'Failed to parse webhook', [
+                'error' => $e->getMessage(),
+                'payload' => $payload
+            ]);
+
+            return null;
+        }
+    }
+
+    private function parseTransactionWebhook($payload) {
+        $data = $payload['data'] ?? [];
+
+        return [
+            'transaction_type' => 'cashin',
+            'acquirer_transaction_id' => $data['id'] ?? null,
+            'status' => $this->mapTransactionStatus($data['status'] ?? 'waiting_payment'),
+            'amount' => isset($data['amount']) ? $data['amount'] / 100 : null,
+            'end_to_end_id' => $data['pix']['end2EndId'] ?? null,
+            'qrcode' => $data['pix']['qrcode'] ?? null,
+            'expiration_date' => $data['pix']['expirationDate'] ?? null,
+            'raw_data' => $data
+        ];
+    }
+
+    private function parseWithdrawWebhook($payload) {
+        $data = $payload['data'] ?? [];
+
+        return [
+            'transaction_type' => 'cashout',
+            'acquirer_transaction_id' => $data['id'] ?? null,
+            'status' => $this->mapWithdrawStatus($data['status'] ?? 'pending'),
+            'amount' => isset($data['amount']) ? $data['amount'] / 100 : null,
+            'net_amount' => isset($data['netAmount']) ? $data['netAmount'] / 100 : null,
+            'fee' => isset($data['fee']) ? $data['fee'] / 100 : null,
+            'raw_data' => $data
+        ];
+    }
+
+    private function mapTransactionStatus($podpayStatus) {
+        $statusMap = [
+            'waiting_payment' => 'waiting_payment',
+            'pending' => 'pending',
+            'approved' => 'paid',
+            'paid' => 'paid',
+            'refused' => 'failed',
+            'cancelled' => 'cancelled',
+            'expired' => 'expired'
+        ];
+
+        return $statusMap[$podpayStatus] ?? 'pending';
+    }
+
+    private function mapWithdrawStatus($podpayStatus) {
+        $statusMap = [
+            'PENDING_QUEUE' => 'processing',
+            'pending' => 'processing',
+            'processing' => 'processing',
+            'COMPLETED' => 'completed',
+            'completed' => 'completed',
+            'failed' => 'failed',
+            'cancelled' => 'cancelled'
+        ];
+
+        return $statusMap[$podpayStatus] ?? 'processing';
+    }
+}

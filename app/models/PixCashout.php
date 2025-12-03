@@ -1,0 +1,151 @@
+<?php
+
+require_once __DIR__ . '/BaseModel.php';
+
+class PixCashout extends BaseModel {
+    protected $table = 'pix_cashout';
+
+    public function findByTransactionId($transactionId) {
+        return $this->findBy('transaction_id', $transactionId);
+    }
+
+    public function createTransaction($data) {
+        $data['transaction_id'] = generateTransactionId('CASHOUT');
+        $data['status'] = 'pending';
+        $data['created_at'] = date('Y-m-d H:i:s');
+
+        return $this->create($data);
+    }
+
+    public function updateStatus($transactionId, $status, $additionalData = []) {
+        $data = array_merge(['status' => $status], $additionalData);
+
+        if ($status === 'completed' && !isset($data['processed_at'])) {
+            $data['processed_at'] = date('Y-m-d H:i:s');
+        }
+
+        $transaction = $this->findByTransactionId($transactionId);
+
+        if ($transaction) {
+            return $this->update($transaction['id'], $data);
+        }
+
+        return false;
+    }
+
+    public function getPendingTransactions($limit = 100) {
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE status = 'pending'
+            ORDER BY created_at ASC
+            LIMIT ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$limit]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function getPendingWebhooks($limit = 100) {
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE status IN ('completed', 'failed', 'cancelled')
+            AND webhook_sent = 0
+            LIMIT ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$limit]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function markWebhookSent($transactionId) {
+        $transaction = $this->findByTransactionId($transactionId);
+
+        if ($transaction) {
+            return $this->update($transaction['id'], [
+                'webhook_sent' => 1,
+                'webhook_sent_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return false;
+    }
+
+    public function getTransactionsBySeller($sellerId, $filters = []) {
+        $params = [$sellerId];
+        $whereClauses = ['seller_id = ?'];
+
+        if (isset($filters['status'])) {
+            $whereClauses[] = 'status = ?';
+            $params[] = $filters['status'];
+        }
+
+        if (isset($filters['start_date'])) {
+            $whereClauses[] = 'created_at >= ?';
+            $params[] = $filters['start_date'];
+        }
+
+        if (isset($filters['end_date'])) {
+            $whereClauses[] = 'created_at <= ?';
+            $params[] = $filters['end_date'];
+        }
+
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE " . implode(' AND ', $whereClauses) . "
+            ORDER BY created_at DESC
+        ";
+
+        if (isset($filters['limit'])) {
+            $sql .= " LIMIT " . (int)$filters['limit'];
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    public function getTotalAmount($sellerId, $status, $startDate = null, $endDate = null) {
+        $params = [$sellerId, $status];
+        $dateFilter = '';
+
+        if ($startDate && $endDate) {
+            $dateFilter = " AND created_at BETWEEN ? AND ?";
+            $params[] = $startDate;
+            $params[] = $endDate;
+        }
+
+        $sql = "
+            SELECT COALESCE(SUM(amount), 0) as total
+            FROM {$this->table}
+            WHERE seller_id = ? AND status = ?
+            {$dateFilter}
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        $result = $stmt->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    public function getRecentTransactions($limit = 10) {
+        $sql = "
+            SELECT c.*, s.name as seller_name, a.name as acquirer_name
+            FROM {$this->table} c
+            LEFT JOIN sellers s ON c.seller_id = s.id
+            LEFT JOIN acquirers a ON c.acquirer_id = a.id
+            ORDER BY c.created_at DESC
+            LIMIT ?
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$limit]);
+
+        return $stmt->fetchAll();
+    }
+}

@@ -1,0 +1,65 @@
+<?php
+
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
+require_once __DIR__ . '/../models/PixCashout.php';
+require_once __DIR__ . '/../models/Log.php';
+require_once __DIR__ . '/../services/AcquirerService.php';
+
+$pixCashoutModel = new PixCashout();
+$logModel = new Log();
+$acquirerService = new AcquirerService();
+
+$logModel->info('worker', 'Payout worker started');
+
+try {
+    $pendingPayouts = $pixCashoutModel->getPendingTransactions(50);
+
+    $processed = 0;
+    $failed = 0;
+
+    foreach ($pendingPayouts as $payout) {
+        try {
+            $acquirer = (new \Acquirer())->find($payout['acquirer_id']);
+
+            if (!$acquirer) {
+                throw new Exception('Acquirer not found');
+            }
+
+            $result = $acquirerService->consultTransaction($acquirer, $payout['transaction_id']);
+
+            if ($result['success']) {
+                $status = $result['data']['status'] ?? 'processing';
+                $pixCashoutModel->updateStatus($payout['transaction_id'], $status);
+                $processed++;
+            } else {
+                $failed++;
+            }
+
+        } catch (Exception $e) {
+            $logModel->error('worker', 'Failed to process payout', [
+                'transaction_id' => $payout['transaction_id'],
+                'error' => $e->getMessage()
+            ]);
+            $failed++;
+        }
+
+        usleep(200000);
+    }
+
+    $logModel->info('worker', 'Payout worker completed', [
+        'processed' => $processed,
+        'failed' => $failed
+    ]);
+
+    echo "Processed: {$processed}, Failed: {$failed}\n";
+
+} catch (Exception $e) {
+    $logModel->error('worker', 'Payout worker error', [
+        'error' => $e->getMessage()
+    ]);
+
+    echo "Error: " . $e->getMessage() . "\n";
+    exit(1);
+}
