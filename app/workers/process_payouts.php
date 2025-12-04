@@ -6,10 +6,12 @@ require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/../models/PixCashout.php';
 require_once __DIR__ . '/../models/Log.php';
 require_once __DIR__ . '/../services/AcquirerService.php';
+require_once __DIR__ . '/../services/WebhookService.php';
 
 $pixCashoutModel = new PixCashout();
 $logModel = new Log();
 $acquirerService = new AcquirerService();
+$webhookService = new WebhookService();
 
 $logModel->info('worker', 'Payout worker started');
 
@@ -40,14 +42,44 @@ try {
 
             if ($result['success']) {
                 $status = $result['data']['status'] ?? 'processing';
+                $oldStatus = $payout['status'];
 
                 $pixCashoutModel->updateStatus($payout['transaction_id'], $status);
 
                 $logModel->info('worker', 'Payout status updated', [
                     'transaction_id' => $payout['transaction_id'],
-                    'old_status' => $payout['status'],
+                    'old_status' => $oldStatus,
                     'new_status' => $status
                 ]);
+
+                if (($status === 'completed' || $status === 'paid') && $oldStatus !== $status) {
+                    $updatedPayout = $pixCashoutModel->findByTransactionId($payout['transaction_id']);
+
+                    if ($updatedPayout) {
+                        $webhookData = [
+                            'transaction_id' => $updatedPayout['transaction_id'],
+                            'external_id' => $updatedPayout['external_id'] ?? null,
+                            'status' => $status,
+                            'net_amount' => $updatedPayout['net_amount'],
+                            'fee_amount' => $updatedPayout['fee_amount'],
+                            'processed_at' => $updatedPayout['processed_at'] ?? date('Y-m-d H:i:s')
+                        ];
+
+                        $webhookService->enqueueWebhook(
+                            $updatedPayout['seller_id'],
+                            $updatedPayout['transaction_id'],
+                            'cashout',
+                            $webhookData,
+                            true
+                        );
+
+                        $logModel->info('worker', 'Cashout webhook enqueued', [
+                            'transaction_id' => $updatedPayout['transaction_id'],
+                            'seller_id' => $updatedPayout['seller_id'],
+                            'status' => $status
+                        ]);
+                    }
+                }
 
                 $processed++;
             } else {
