@@ -79,22 +79,10 @@ require_once __DIR__ . '/../layouts/header.php';
                            placeholder="Ex: 12345678901">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoria da CNH *</label>
-                    <select name="cnh_category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Selecione</option>
-                        <option value="A" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'A') ? 'selected' : '' ?>>A</option>
-                        <option value="B" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'B') ? 'selected' : '' ?>>B</option>
-                        <option value="AB" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'AB') ? 'selected' : '' ?>>AB</option>
-                        <option value="C" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'C') ? 'selected' : '' ?>>C</option>
-                        <option value="D" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'D') ? 'selected' : '' ?>>D</option>
-                        <option value="E" <?= (isset($seller['cnh_category']) && $seller['cnh_category'] === 'E') ? 'selected' : '' ?>>E</option>
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Data de Validade da CNH *</label>
+                    <input type="date" name="cnh_expiry_date" value="<?= $seller['cnh_expiry_date'] ?? '' ?>"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Data de Validade da CNH *</label>
-                <input type="date" name="cnh_expiry_date" value="<?= $seller['cnh_expiry_date'] ?? '' ?>"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
         </div>
 

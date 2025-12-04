@@ -96,11 +96,10 @@ class SellerController {
             }
         } else {
             $updateData['cnh_number'] = trim($_POST['cnh_number'] ?? '');
-            $updateData['cnh_category'] = $_POST['cnh_category'] ?? '';
             $updateData['cnh_expiry_date'] = $_POST['cnh_expiry_date'] ?? null;
 
-            if (empty($updateData['cnh_number']) || empty($updateData['cnh_category'])) {
-                $_SESSION['error'] = 'Número da CNH e categoria são obrigatórios';
+            if (empty($updateData['cnh_number']) || empty($updateData['cnh_expiry_date'])) {
+                $_SESSION['error'] = 'Número e data de validade da CNH são obrigatórios';
                 header('Location: /seller/personal-info');
                 exit;
             }

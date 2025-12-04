@@ -7,7 +7,6 @@
     - `rg_issuer` (varchar) - Órgão emissor do RG
     - `rg_issue_date` (date) - Data de emissão do RG
     - `cnh_number` (varchar) - Número da CNH
-    - `cnh_category` (varchar) - Categoria da CNH
     - `cnh_expiry_date` (date) - Data de validade da CNH
     - `birth_date` (date) - Data de nascimento
     - `address_zipcode` (varchar) - CEP
@@ -31,8 +30,7 @@ ALTER TABLE `sellers`
   ADD COLUMN `rg_issuer` VARCHAR(50) DEFAULT NULL COMMENT 'Órgão emissor do RG (ex: SSP/SP)' AFTER `rg_number`,
   ADD COLUMN `rg_issue_date` DATE DEFAULT NULL COMMENT 'Data de emissão do RG' AFTER `rg_issuer`,
   ADD COLUMN `cnh_number` VARCHAR(20) DEFAULT NULL COMMENT 'Número da CNH' AFTER `rg_issue_date`,
-  ADD COLUMN `cnh_category` VARCHAR(10) DEFAULT NULL COMMENT 'Categoria da CNH (A, B, AB, etc)' AFTER `cnh_number`,
-  ADD COLUMN `cnh_expiry_date` DATE DEFAULT NULL COMMENT 'Data de validade da CNH' AFTER `cnh_category`,
+  ADD COLUMN `cnh_expiry_date` DATE DEFAULT NULL COMMENT 'Data de validade da CNH' AFTER `cnh_number`,
   ADD COLUMN `birth_date` DATE DEFAULT NULL COMMENT 'Data de nascimento' AFTER `cnh_expiry_date`,
   ADD COLUMN `address_zipcode` VARCHAR(9) DEFAULT NULL COMMENT 'CEP' AFTER `birth_date`,
   ADD COLUMN `address_street` VARCHAR(255) DEFAULT NULL COMMENT 'Rua/Avenida' AFTER `address_zipcode`,
