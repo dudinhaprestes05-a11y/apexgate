@@ -14,16 +14,22 @@ class PixCashout extends BaseModel {
     }
 
     public function checkDuplicate($sellerId, $pixKey, $beneficiaryDocument) {
+        $threeMinutesAgo = date('Y-m-d H:i:s', strtotime('-3 minutes'));
+
         $sql = "
             SELECT * FROM {$this->table}
             WHERE seller_id = ?
             AND (pix_key = ? OR beneficiary_document = ?)
-            AND status IN ('pending', 'processing')
+            AND (
+                status IN ('pending', 'processing')
+                OR created_at >= ?
+            )
+            ORDER BY created_at DESC
             LIMIT 1
         ";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$sellerId, $pixKey, $beneficiaryDocument]);
+        $stmt->execute([$sellerId, $pixKey, $beneficiaryDocument, $threeMinutesAgo]);
 
         return $stmt->fetch();
     }
