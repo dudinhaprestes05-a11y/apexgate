@@ -115,8 +115,14 @@ class CashoutController {
 
         $accountId = $acquirerResponse['account_id'];
 
+        $account = $this->acquirerService->getAccountForTransaction($accountId);
+        if (!$account) {
+            errorResponse('Account not found', 500);
+        }
+
         $cashoutData = [
             'seller_id' => $seller['id'],
+            'acquirer_id' => $account['acquirer_id'],
             'acquirer_account_id' => $accountId,
             'transaction_id' => $transactionId,
             'external_id' => $input['external_id'] ?? null,
