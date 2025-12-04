@@ -6,9 +6,29 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Informações Pessoais</h1>
-        <p class="text-gray-600 mt-2">Complete seus dados pessoais antes de enviar os documentos</p>
+        <p class="text-gray-600 mt-2">
+            <?php if ($seller['personal_info_completed']): ?>
+                Suas informações pessoais foram registradas
+            <?php else: ?>
+                Complete seus dados pessoais antes de enviar os documentos
+            <?php endif; ?>
+        </p>
     </div>
 
+    <?php if ($seller['personal_info_completed']): ?>
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start">
+            <i class="fas fa-lock text-yellow-600 text-xl mr-3 mt-1"></i>
+            <div>
+                <h3 class="font-semibold text-yellow-900">Informações Bloqueadas</h3>
+                <p class="text-yellow-700 text-sm mt-1">
+                    Suas informações pessoais estão protegidas e não podem ser alteradas.
+                    Caso precise atualizar algum dado, entre em contato com o suporte através do email ou telefone disponível no rodapé.
+                </p>
+            </div>
+        </div>
+    </div>
+    <?php else: ?>
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <div class="flex items-start">
             <i class="fas fa-info-circle text-blue-600 text-xl mr-3 mt-1"></i>
@@ -22,21 +42,35 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
+    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle text-orange-600 text-xl mr-3 mt-1"></i>
+            <div>
+                <h3 class="font-semibold text-orange-900">Atenção: Dados Imutáveis</h3>
+                <p class="text-orange-700 text-sm mt-1">
+                    Após salvar, suas informações pessoais não poderão mais ser alteradas por questões de segurança.
+                    Certifique-se de que todos os dados estão corretos antes de continuar.
+                </p>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <form method="POST" action="/seller/personal-info/save" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
         <!-- Tipo de Documento -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Documento Pessoal *</label>
             <div class="grid grid-cols-2 gap-4">
-                <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition hover:border-blue-500 <?= (!isset($seller['personal_document_type']) || $seller['personal_document_type'] === 'rg') ? 'border-blue-600 bg-blue-50' : 'border-gray-200' ?>">
-                    <input type="radio" name="personal_document_type" value="rg" class="sr-only" <?= (!isset($seller['personal_document_type']) || $seller['personal_document_type'] === 'rg') ? 'checked' : '' ?> onchange="toggleDocumentFields()">
+                <label class="relative flex items-center justify-center p-4 border-2 rounded-lg <?= $seller['personal_info_completed'] ? 'cursor-not-allowed opacity-60' : 'cursor-pointer transition hover:border-blue-500' ?> <?= (!isset($seller['personal_document_type']) || $seller['personal_document_type'] === 'rg') ? 'border-blue-600 bg-blue-50' : 'border-gray-200' ?>">
+                    <input type="radio" name="personal_document_type" value="rg" class="sr-only" <?= (!isset($seller['personal_document_type']) || $seller['personal_document_type'] === 'rg') ? 'checked' : '' ?> onchange="toggleDocumentFields()" <?= $seller['personal_info_completed'] ? 'disabled' : '' ?>>
                     <div class="text-center">
                         <i class="fas fa-id-card text-3xl text-blue-600 mb-2"></i>
                         <div class="font-medium text-gray-900">RG</div>
                         <div class="text-xs text-gray-500">Registro Geral</div>
                     </div>
                 </label>
-                <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition hover:border-blue-500 <?= (isset($seller['personal_document_type']) && $seller['personal_document_type'] === 'cnh') ? 'border-blue-600 bg-blue-50' : 'border-gray-200' ?>">
-                    <input type="radio" name="personal_document_type" value="cnh" class="sr-only" <?= (isset($seller['personal_document_type']) && $seller['personal_document_type'] === 'cnh') ? 'checked' : '' ?> onchange="toggleDocumentFields()">
+                <label class="relative flex items-center justify-center p-4 border-2 rounded-lg <?= $seller['personal_info_completed'] ? 'cursor-not-allowed opacity-60' : 'cursor-pointer transition hover:border-blue-500' ?> <?= (isset($seller['personal_document_type']) && $seller['personal_document_type'] === 'cnh') ? 'border-blue-600 bg-blue-50' : 'border-gray-200' ?>">
+                    <input type="radio" name="personal_document_type" value="cnh" class="sr-only" <?= (isset($seller['personal_document_type']) && $seller['personal_document_type'] === 'cnh') ? 'checked' : '' ?> onchange="toggleDocumentFields()" <?= $seller['personal_info_completed'] ? 'disabled' : '' ?>>
                     <div class="text-center">
                         <i class="fas fa-id-card-alt text-3xl text-blue-600 mb-2"></i>
                         <div class="font-medium text-gray-900">CNH</div>
@@ -52,20 +86,21 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Número do RG *</label>
                     <input type="text" name="rg_number" value="<?= htmlspecialchars($seller['rg_number'] ?? '') ?>"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Ex: 12.345.678-9">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           placeholder="Ex: 12.345.678-9" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Órgão Emissor *</label>
                     <input type="text" name="rg_issuer" value="<?= htmlspecialchars($seller['rg_issuer'] ?? '') ?>"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Ex: SSP/SP">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           placeholder="Ex: SSP/SP" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                 </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Data de Emissão do RG *</label>
                 <input type="date" name="rg_issue_date" value="<?= $seller['rg_issue_date'] ?? '' ?>"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                       <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
             </div>
         </div>
 
@@ -75,13 +110,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Número da CNH *</label>
                     <input type="text" name="cnh_number" value="<?= htmlspecialchars($seller['cnh_number'] ?? '') ?>"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Ex: 12345678901">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           placeholder="Ex: 12345678901" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Data de Validade da CNH *</label>
                     <input type="date" name="cnh_expiry_date" value="<?= $seller['cnh_expiry_date'] ?? '' ?>"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                 </div>
             </div>
         </div>
@@ -90,7 +126,8 @@ require_once __DIR__ . '/../layouts/header.php';
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label>
             <input type="date" name="birth_date" value="<?= $seller['birth_date'] ?? '' ?>" required
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                   <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
         </div>
 
         <!-- Endereço -->
@@ -101,57 +138,65 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">CEP *</label>
                     <input type="text" name="address_zipcode" id="zipcode" value="<?= htmlspecialchars($seller['address_zipcode'] ?? '') ?>" required
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="00000-000" maxlength="9" onblur="fetchAddress()">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           placeholder="00000-000" maxlength="9" onblur="fetchAddress()" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
+                    <?php if (!$seller['personal_info_completed']): ?>
                     <p class="text-xs text-gray-500 mt-1">Digite o CEP para preencher automaticamente</p>
+                    <?php endif; ?>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Rua/Avenida *</label>
                         <input type="text" name="address_street" id="street" value="<?= htmlspecialchars($seller['address_street'] ?? '') ?>" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                               <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Número *</label>
                         <input type="text" name="address_number" value="<?= htmlspecialchars($seller['address_number'] ?? '') ?>" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                               <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Complemento</label>
                     <input type="text" name="address_complement" value="<?= htmlspecialchars($seller['address_complement'] ?? '') ?>"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Apto, Bloco, Sala, etc (opcional)">
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                           placeholder="Apto, Bloco, Sala, etc (opcional)" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Bairro *</label>
                         <input type="text" name="address_neighborhood" id="neighborhood" value="<?= htmlspecialchars($seller['address_neighborhood'] ?? '') ?>" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                               <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Cidade *</label>
                         <input type="text" name="address_city" id="city" value="<?= htmlspecialchars($seller['address_city'] ?? '') ?>" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                               <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Estado *</label>
                         <input type="text" name="address_state" id="state" value="<?= htmlspecialchars($seller['address_state'] ?? '') ?>" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="UF" maxlength="2">
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent <?= $seller['personal_info_completed'] ? 'bg-gray-100 cursor-not-allowed' : '' ?>"
+                               placeholder="UF" maxlength="2" <?= $seller['personal_info_completed'] ? 'readonly' : '' ?>>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-4 pt-6 border-t">
+            <?php if (!$seller['personal_info_completed']): ?>
             <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
                 <i class="fas fa-save mr-2"></i>Salvar e Continuar
             </button>
-            <a href="/seller/dashboard" class="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition">
+            <?php endif; ?>
+            <a href="/seller/dashboard" class="<?= $seller['personal_info_completed'] ? 'flex-1' : '' ?> px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition text-center">
                 Voltar
             </a>
         </div>
@@ -200,6 +245,10 @@ toggleDocumentFields();
 
 // Buscar endereço por CEP
 async function fetchAddress() {
+    <?php if ($seller['personal_info_completed']): ?>
+    return; // Bloqueado quando informações já foram salvas
+    <?php endif; ?>
+
     const zipcode = document.getElementById('zipcode').value.replace(/\D/g, '');
 
     if (zipcode.length !== 8) {
@@ -222,6 +271,7 @@ async function fetchAddress() {
 }
 
 // Formatar CEP automaticamente
+<?php if (!$seller['personal_info_completed']): ?>
 document.getElementById('zipcode').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 5) {
@@ -229,6 +279,7 @@ document.getElementById('zipcode').addEventListener('input', function(e) {
     }
     e.target.value = value;
 });
+<?php endif; ?>
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
