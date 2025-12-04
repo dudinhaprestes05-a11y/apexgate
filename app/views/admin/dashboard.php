@@ -4,43 +4,43 @@ require_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
     <!-- Sellers Ativos -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="stat-icon w-12 h-12 rounded-xl flex items-center justify-center">
-                <i class="fas fa-store text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="stat-icon w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center">
+                <i class="fas fa-store text-white text-base md:text-xl"></i>
             </div>
         </div>
         <div>
-            <p class="text-slate-400 text-sm mb-1">Sellers Ativos</p>
-            <p class="text-3xl font-bold text-white"><?= $stats['total_sellers'] ?></p>
+            <p class="text-slate-400 text-xs md:text-sm mb-1">Sellers Ativos</p>
+            <p class="text-2xl md:text-3xl font-bold text-white"><?= $stats['total_sellers'] ?></p>
         </div>
     </div>
 
     <!-- Pendentes -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-yellow-500 to-yellow-600">
-                <i class="fas fa-clock text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-yellow-500 to-yellow-600">
+                <i class="fas fa-clock text-white text-base md:text-xl"></i>
             </div>
             <?php if ($stats['pending_sellers'] > 0): ?>
             <span class="badge badge-warning">
-                <i class="fas fa-exclamation-circle mr-1"></i>Atenção
+                <i class="fas fa-exclamation-circle mr-1"></i><span class="hidden sm:inline">Atenção</span>
             </span>
             <?php endif; ?>
         </div>
         <div>
-            <p class="text-slate-400 text-sm mb-1">Sellers Pendentes</p>
-            <p class="text-3xl font-bold text-white"><?= $stats['pending_sellers'] ?></p>
+            <p class="text-slate-400 text-xs md:text-sm mb-1">Sellers Pendentes</p>
+            <p class="text-2xl md:text-3xl font-bold text-white"><?= $stats['pending_sellers'] ?></p>
         </div>
     </div>
 
     <!-- Documentos -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600">
-                <i class="fas fa-file-alt text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600">
+                <i class="fas fa-file-alt text-white text-base md:text-xl"></i>
             </div>
             <?php if ($stats['pending_documents'] > 0): ?>
             <span class="badge badge-warning">
@@ -49,35 +49,35 @@ require_once __DIR__ . '/../layouts/header.php';
             <?php endif; ?>
         </div>
         <div>
-            <p class="text-slate-400 text-sm mb-1">Documentos Pendentes</p>
-            <p class="text-3xl font-bold text-white"><?= $stats['pending_documents'] ?></p>
+            <p class="text-slate-400 text-xs md:text-sm mb-1">Documentos Pendentes</p>
+            <p class="text-2xl md:text-3xl font-bold text-white"><?= $stats['pending_documents'] ?></p>
         </div>
     </div>
 
     <!-- Total Cash-in -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600">
-                <i class="fas fa-arrow-down text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600">
+                <i class="fas fa-arrow-down text-white text-base md:text-xl"></i>
             </div>
             <span class="badge badge-success">
-                <i class="fas fa-chart-line mr-1"></i>Cash-in
+                <i class="fas fa-chart-line mr-1"></i><span class="hidden sm:inline">Cash-in</span>
             </span>
         </div>
         <div>
-            <p class="text-slate-400 text-sm mb-1">Total Recebido</p>
-            <p class="text-2xl font-bold text-white">R$ <?= number_format($stats['total_cashin'], 2, ',', '.') ?></p>
+            <p class="text-slate-400 text-xs md:text-sm mb-1">Total Recebido</p>
+            <p class="text-xl md:text-2xl font-bold text-white">R$ <?= number_format($stats['total_cashin'], 2, ',', '.') ?></p>
         </div>
     </div>
 
     <!-- Total Cash-out -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-red-600">
-                <i class="fas fa-arrow-up text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-red-500 to-red-600">
+                <i class="fas fa-arrow-up text-white text-base md:text-xl"></i>
             </div>
             <span class="badge badge-danger">
-                <i class="fas fa-chart-line mr-1"></i>Cash-out
+                <i class="fas fa-chart-line mr-1"></i><span class="hidden sm:inline">Cash-out</span>
             </span>
         </div>
         <div>

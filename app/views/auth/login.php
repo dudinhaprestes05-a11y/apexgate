@@ -9,15 +9,15 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl mb-4 shadow-lg">
-                <i class="fas fa-bolt text-white text-2xl"></i>
+        <div class="text-center mb-6 md:mb-8">
+            <div class="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl mb-4 shadow-lg">
+                <i class="fas fa-bolt text-white text-xl md:text-2xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900">Gateway PIX</h1>
-            <p class="text-gray-600 mt-2">Entre na sua conta</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Gateway PIX</h1>
+            <p class="text-sm md:text-base text-gray-600 mt-2">Entre na sua conta</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <?php if (isset($_SESSION['error'])): ?>
             <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
                 <i class="fas fa-exclamation-circle mr-2"></i>
@@ -32,15 +32,15 @@
             </div>
             <?php unset($_SESSION['success']); endif; ?>
 
-            <form method="POST" action="/login" class="space-y-5">
+            <form method="POST" action="/login" class="space-y-4 md:space-y-5">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-envelope text-gray-400"></i>
+                            <i class="fas fa-envelope text-gray-400 text-sm"></i>
                         </div>
                         <input type="email" name="email" required
-                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm md:text-base"
                                placeholder="seu@email.com">
                     </div>
                 </div>
@@ -49,16 +49,16 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-lock text-gray-400"></i>
+                            <i class="fas fa-lock text-gray-400 text-sm"></i>
                         </div>
                         <input type="password" name="password" required
-                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm md:text-base"
                                placeholder="••••••••">
                     </div>
                 </div>
 
                 <button type="submit"
-                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 md:py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm md:text-base">
                     <i class="fas fa-sign-in-alt mr-2"></i>Entrar
                 </button>
             </form>

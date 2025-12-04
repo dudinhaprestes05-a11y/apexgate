@@ -5,78 +5,84 @@ $status = $_GET['status'] ?? '';
 $search = $_GET['search'] ?? '';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Sellers</h1>
-        <p class="text-gray-600 mt-2">Gerencie todos os sellers do sistema</p>
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-100">Sellers</h1>
+        <p class="text-sm md:text-base text-slate-400 mt-2">Gerencie todos os sellers do sistema</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <form method="GET" action="/admin/sellers" class="flex items-end gap-4">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
-                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                       placeholder="Nome, email ou documento..."
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+    <div class="card p-4 md:p-6 mb-4 md:mb-6">
+        <form method="GET" action="/admin/sellers">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Buscar</label>
+                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
+                           placeholder="Nome, email ou documento..."
+                           class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-100 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                    <select name="status" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-100 text-sm">
+                        <option value="">Todos</option>
+                        <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>Pendente</option>
+                        <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativo</option>
+                        <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativo</option>
+                        <option value="blocked" <?= $status === 'blocked' ? 'selected' : '' ?>>Bloqueado</option>
+                        <option value="rejected" <?= $status === 'rejected' ? 'selected' : '' ?>>Rejeitado</option>
+                    </select>
+                </div>
             </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Todos</option>
-                    <option value="pending" <?= $status === 'pending' ? 'selected' : '' ?>>Pendente</option>
-                    <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Ativo</option>
-                    <option value="inactive" <?= $status === 'inactive' ? 'selected' : '' ?>>Inativo</option>
-                    <option value="blocked" <?= $status === 'blocked' ? 'selected' : '' ?>>Bloqueado</option>
-                    <option value="rejected" <?= $status === 'rejected' ? 'selected' : '' ?>>Rejeitado</option>
-                </select>
+            <div class="mt-4">
+                <button type="submit" class="w-full md:w-auto px-4 md:px-6 py-2 btn-primary text-white rounded-lg transition text-sm">
+                    <i class="fas fa-search mr-2"></i>Buscar
+                </button>
             </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-search mr-2"></i>Buscar
-            </button>
         </form>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="min-w-full table-dark">
+            <thead>
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Documento</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saldo</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cadastro</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">ID</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Nome</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Email</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Documento</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Status</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Saldo</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap hidden lg:table-cell">Cadastro</th>
+                    <th class="px-3 md:px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase whitespace-nowrap">Ações</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody>
                 <?php if (empty($sellers)): ?>
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="8" class="px-6 py-12 text-center text-slate-400">
                         <i class="fas fa-users-slash text-4xl mb-3 block"></i>
                         Nenhum seller encontrado
                     </td>
                 </tr>
                 <?php else: ?>
                 <?php foreach ($sellers as $seller): ?>
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr>
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-slate-100">
                         #<?= $seller['id'] ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($seller['name']) ?></div>
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap">
+                        <div class="text-xs md:text-sm font-medium text-slate-100"><?= htmlspecialchars($seller['name']) ?></div>
                         <?php if ($seller['person_type'] === 'business' && $seller['company_name']): ?>
-                        <div class="text-xs text-gray-500"><?= htmlspecialchars($seller['company_name']) ?></div>
+                        <div class="text-xs text-slate-400"><?= htmlspecialchars($seller['company_name']) ?></div>
                         <?php endif; ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-slate-300">
                         <?= htmlspecialchars($seller['email']) ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-700">
-                        <?= htmlspecialchars($seller['document']) ?>
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm font-mono text-slate-300">
+                        <span class="hidden md:inline"><?= htmlspecialchars($seller['document']) ?></span>
+                        <span class="md:hidden"><?= htmlspecialchars(substr($seller['document'], 0, 8)) ?>...</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap">
                         <span class="px-2 py-1 text-xs font-medium rounded-full
                             <?php
                             echo match($seller['status']) {
@@ -91,15 +97,16 @@ $search = $_GET['search'] ?? '';
                             <?= ucfirst($seller['status']) ?>
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm font-medium text-slate-100">
                         R$ <?= number_format($seller['balance'], 2, ',', '.') ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-slate-300 hidden lg:table-cell">
                         <?= date('d/m/Y', strtotime($seller['created_at'])) ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <a href="/admin/sellers/view/<?= $seller['id'] ?>" class="text-blue-600 hover:text-blue-800 font-medium">
-                            Ver detalhes
+                    <td class="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm">
+                        <a href="/admin/sellers/view/<?= $seller['id'] ?>" class="text-blue-400 hover:text-blue-300 font-medium">
+                            <span class="hidden md:inline">Ver detalhes</span>
+                            <i class="fas fa-eye md:hidden"></i>
                         </a>
                     </td>
                 </tr>
@@ -107,6 +114,7 @@ $search = $_GET['search'] ?? '';
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

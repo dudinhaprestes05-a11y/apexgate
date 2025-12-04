@@ -3,10 +3,10 @@ $pageTitle = 'Dashboard';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p class="text-gray-600 mt-2">Bem-vindo ao seu painel de controle</p>
+<div class="max-w-7xl mx-auto">
+    <div class="mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-sm md:text-base text-gray-600 mt-2">Bem-vindo ao seu painel de controle</p>
     </div>
 
     <?php if ($seller['status'] === 'pending'): ?>
@@ -24,74 +24,74 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <?php endif; ?>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 hover-lift">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Saldo Disponível</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['balance'], 2, ',', '.') ?></p>
+                    <p class="text-gray-600 text-xs md:text-sm font-medium">Saldo Disponível</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['balance'], 2, ',', '.') ?></p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-wallet text-white text-xl"></i>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-wallet text-white text-base md:text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 hover-lift">
             <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <p class="text-gray-600 text-sm font-medium">Total Recebido (Bruto)</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['total_cashin'], 2, ',', '.') ?></p>
+                <div class="flex-1 min-w-0">
+                    <p class="text-gray-600 text-xs md:text-sm font-medium">Total Recebido (Bruto)</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['total_cashin'], 2, ',', '.') ?></p>
                     <p class="text-xs text-gray-500 mt-1">Líquido: R$ <?= number_format($stats['total_cashin_net'], 2, ',', '.') ?></p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-down text-white text-xl"></i>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-arrow-down text-white text-base md:text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 hover-lift">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Total Sacado</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['total_cashout'], 2, ',', '.') ?></p>
+                    <p class="text-gray-600 text-xs md:text-sm font-medium">Total Sacado</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['total_cashout'], 2, ',', '.') ?></p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-arrow-up text-white text-xl"></i>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-arrow-up text-white text-base md:text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 hover-lift">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">Pendentes</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-2"><?= $stats['pending_cashin'] ?></p>
+                    <p class="text-gray-600 text-xs md:text-sm font-medium">Pendentes</p>
+                    <p class="text-xl md:text-2xl font-bold text-gray-900 mt-2"><?= $stats['pending_cashin'] ?></p>
                 </div>
-                <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clock text-white text-xl"></i>
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-clock text-white text-base md:text-xl"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center justify-between">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+            <h2 class="text-base md:text-lg font-bold text-gray-900 mb-4 flex items-center justify-between">
                 <span><i class="fas fa-arrow-down text-blue-600 mr-2"></i>Recebimentos Recentes</span>
-                <a href="/seller/transactions?type=cashin" class="text-blue-600 text-sm font-normal hover:underline">Ver todos</a>
+                <a href="/seller/transactions?type=cashin" class="text-blue-600 text-xs md:text-sm font-normal hover:underline">Ver todos</a>
             </h2>
             <div class="space-y-3">
                 <?php if (empty($recentCashin)): ?>
                     <p class="text-gray-500 text-center py-8">Nenhum recebimento ainda</p>
                 <?php else: ?>
                     <?php foreach (array_slice($recentCashin, 0, 5) as $tx): ?>
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-medium text-gray-900">R$ <?= number_format($tx['amount'], 2, ',', '.') ?></p>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-medium text-gray-900 text-sm md:text-base">R$ <?= number_format($tx['amount'], 2, ',', '.') ?></p>
                             <p class="text-xs text-gray-600"><?= date('d/m/Y H:i', strtotime($tx['created_at'])) ?></p>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium
+                        <span class="px-2 md:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap
                             <?= $tx['status'] === 'approved' || $tx['status'] === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' ?>">
                             <?= ucfirst($tx['status']) ?>
                         </span>
@@ -101,10 +101,10 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center justify-between">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+            <h2 class="text-base md:text-lg font-bold text-gray-900 mb-4 flex items-center justify-between">
                 <span><i class="fas fa-bell text-blue-600 mr-2"></i>Notificações</span>
-                <a href="/seller/notifications" class="text-blue-600 text-sm font-normal hover:underline">Ver todas</a>
+                <a href="/seller/notifications" class="text-blue-600 text-xs md:text-sm font-normal hover:underline">Ver todas</a>
             </h2>
             <div class="space-y-3">
                 <?php if (empty($notifications)): ?>

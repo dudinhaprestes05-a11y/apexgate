@@ -6,10 +6,10 @@ $newApiSecret = $_SESSION['new_api_secret'] ?? null;
 unset($_SESSION['new_api_secret']);
 ?>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Credenciais da API</h1>
-        <p class="text-gray-600 mt-2">Use essas credenciais para integrar com nossa API</p>
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Credenciais da API</h1>
+        <p class="text-sm md:text-base text-gray-600 mt-2">Use essas credenciais para integrar com nossa API</p>
     </div>
 
     <?php if ($newApiSecret): ?>
@@ -35,19 +35,19 @@ unset($_SESSION['new_api_secret']);
     </div>
     <?php endif; ?>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-900 mb-4">Suas Credenciais</h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+        <h2 class="text-base md:text-lg font-bold text-gray-900 mb-4">Suas Credenciais</h2>
 
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
-                <div class="flex items-center space-x-2">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                     <input type="text" readonly
                            value="<?= htmlspecialchars($seller['api_key']) ?>"
-                           class="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-mono text-sm">
+                           class="flex-1 px-3 md:px-4 py-2 md:py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-mono text-xs md:text-sm">
                     <button onclick="copyToClipboard('<?= htmlspecialchars($seller['api_key']) ?>', this)"
-                            class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-copy"></i>
+                            class="px-4 py-2 md:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
+                        <i class="fas fa-copy mr-2"></i><span class="sm:inline">Copiar</span>
                     </button>
                 </div>
             </div>

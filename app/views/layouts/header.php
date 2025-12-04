@@ -239,11 +239,51 @@ $currentPath = $_SERVER['REQUEST_URI'];
         .modal.hidden {
             display: none;
         }
+
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+            display: none;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .stat-card {
+                min-width: 100%;
+            }
+
+            .table-dark {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-900">
+    <!-- Mobile Overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col z-50">
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col z-50">
         <!-- Logo -->
         <div class="p-6 border-b border-slate-700">
             <a href="<?= $user && $user['role'] === 'admin' ? '/admin/dashboard' : '/seller/dashboard' ?>" class="flex items-center space-x-3">
@@ -364,19 +404,25 @@ $currentPath = $_SERVER['REQUEST_URI'];
     </div>
 
     <!-- Main Content -->
-    <div class="ml-64 min-h-screen">
+    <div class="md:ml-64 min-h-screen">
         <!-- Top Bar -->
         <div class="bg-slate-800 bg-opacity-50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-40">
-            <div class="px-8 py-4 flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-white"><?= htmlspecialchars($pageTitle) ?></h1>
-                </div>
+            <div class="px-4 md:px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-400 hover:text-white transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-lg md:text-2xl font-bold text-white"><?= htmlspecialchars($pageTitle) ?></h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 md:space-x-4">
                     <button class="relative p-2 text-slate-400 hover:text-white transition">
-                        <i class="fas fa-bell text-lg"></i>
+                        <i class="fas fa-bell text-base md:text-lg"></i>
                         <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
-                    <div class="text-sm text-slate-400">
+                    <div class="hidden sm:block text-sm text-slate-400">
                         <i class="fas fa-clock mr-1"></i>
                         <span id="current-time"></span>
                     </div>
@@ -386,11 +432,11 @@ $currentPath = $_SERVER['REQUEST_URI'];
 
         <!-- Alerts -->
         <?php if (isset($_SESSION['success'])): ?>
-        <div class="px-8 mt-6">
+        <div class="px-4 md:px-8 mt-6">
             <div class="alert alert-success fade-in flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-check-circle text-xl"></i>
-                    <span><?= htmlspecialchars($_SESSION['success']) ?></span>
+                    <i class="fas fa-check-circle text-base md:text-xl"></i>
+                    <span class="text-sm md:text-base"><?= htmlspecialchars($_SESSION['success']) ?></span>
                 </div>
                 <button onclick="this.parentElement.parentElement.remove()" class="text-green-400 hover:text-green-300">
                     <i class="fas fa-times"></i>
@@ -400,11 +446,11 @@ $currentPath = $_SERVER['REQUEST_URI'];
         <?php unset($_SESSION['success']); endif; ?>
 
         <?php if (isset($_SESSION['error'])): ?>
-        <div class="px-8 mt-6">
+        <div class="px-4 md:px-8 mt-6">
             <div class="alert alert-error fade-in flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-exclamation-circle text-xl"></i>
-                    <span><?= htmlspecialchars($_SESSION['error']) ?></span>
+                    <i class="fas fa-exclamation-circle text-base md:text-xl"></i>
+                    <span class="text-sm md:text-base"><?= htmlspecialchars($_SESSION['error']) ?></span>
                 </div>
                 <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300">
                     <i class="fas fa-times"></i>
@@ -414,13 +460,35 @@ $currentPath = $_SERVER['REQUEST_URI'];
         <?php unset($_SESSION['error']); endif; ?>
 
         <!-- Page Content -->
-        <div class="p-8">
+        <div class="p-4 md:p-8">
             <script>
                 function updateTime() {
                     const now = new Date();
                     const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    document.getElementById('current-time').textContent = timeString;
+                    const timeElement = document.getElementById('current-time');
+                    if (timeElement) {
+                        timeElement.textContent = timeString;
+                    }
                 }
                 updateTime();
                 setInterval(updateTime, 60000);
+
+                function toggleSidebar() {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('mobileOverlay');
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                }
+
+                // Close sidebar when clicking on a link (mobile)
+                document.addEventListener('DOMContentLoaded', function() {
+                    const sidebarLinks = document.querySelectorAll('#sidebar a');
+                    sidebarLinks.forEach(link => {
+                        link.addEventListener('click', function() {
+                            if (window.innerWidth < 768) {
+                                toggleSidebar();
+                            }
+                        });
+                    });
+                });
             </script>

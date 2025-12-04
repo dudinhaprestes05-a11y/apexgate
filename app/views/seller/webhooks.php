@@ -3,16 +3,16 @@ $pageTitle = 'Configurações de Webhook';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Configurações de Webhook</h1>
-        <p class="text-gray-600 mt-2">Configure notificações automáticas sobre suas transações</p>
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Configurações de Webhook</h1>
+        <p class="text-sm md:text-base text-gray-600 mt-2">Configure notificações automáticas sobre suas transações</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-6">Configurações</h2>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                <h2 class="text-base md:text-lg font-bold text-gray-900 mb-4 md:mb-6">Configurações</h2>
                 <form method="POST" action="/seller/webhooks/update" class="space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">URL do Webhook</label>
@@ -41,8 +41,8 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
 
-        <div class="space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="space-y-4 md:space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
                 <h3 class="font-bold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-info-circle text-blue-600 mr-2"></i>
                     Como Funciona
@@ -83,8 +83,8 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
-    <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 class="font-bold text-gray-900 mb-4">Exemplo de Payload</h3>
+    <div class="mt-6 md:mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+        <h3 class="text-base md:text-lg font-bold text-gray-900 mb-4">Exemplo de Payload</h3>
         <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs"><code>{
   "event": "payment.approved",
   "transaction_id": "txn_123456789",
