@@ -1308,8 +1308,7 @@ class AdminController {
                 aa.id,
                 aa.name as account_name,
                 aa.is_active,
-                aa.daily_limit,
-                aa.daily_used,
+                aa.balance,
                 COUNT(DISTINCT pc.id) as transaction_count,
                 COALESCE(SUM(pc.amount), 0) as total_volume,
                 COALESCE(AVG(CASE WHEN pc.status IN ('approved', 'paid') THEN 100 ELSE 0 END), 0) as success_rate
@@ -1317,7 +1316,7 @@ class AdminController {
             LEFT JOIN pix_cashin pc ON pc.acquirer_account_id = aa.id
                 AND pc.created_at >= CURRENT_DATE
             WHERE aa.is_active = true
-            GROUP BY aa.id, aa.name, aa.is_active, aa.daily_limit, aa.daily_used
+            GROUP BY aa.id, aa.name, aa.is_active, aa.balance
             ORDER BY total_volume DESC
             LIMIT 6
         ";

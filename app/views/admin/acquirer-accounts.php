@@ -41,21 +41,21 @@ require_once __DIR__ . '/../layouts/header.php';
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Limite Total Diário</h3>
-                <i class="fas fa-chart-line text-purple-600"></i>
+                <h3 class="text-sm font-medium text-gray-600">Saldo Total</h3>
+                <i class="fas fa-wallet text-purple-600"></i>
             </div>
             <p class="text-3xl font-bold text-gray-900">
-                R$ <?= number_format(array_sum(array_column($accounts, 'daily_limit')), 2, ',', '.') ?>
+                R$ <?= number_format(array_sum(array_column($accounts, 'balance')), 2, ',', '.') ?>
             </p>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-600">Usado Hoje</h3>
+                <h3 class="text-sm font-medium text-gray-600">Volume Total</h3>
                 <i class="fas fa-chart-bar text-orange-600"></i>
             </div>
             <p class="text-3xl font-bold text-orange-600">
-                R$ <?= number_format(array_sum(array_column($accounts, 'daily_used')), 2, ',', '.') ?>
+                R$ <?= number_format(array_sum(array_column($accounts, 'total_volume')), 2, ',', '.') ?>
             </p>
         </div>
     </div>
@@ -106,14 +106,9 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-sm font-medium text-gray-600 mb-1 block">Limite Diário</label>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <?php $percentage = ($account['daily_limit'] > 0) ? ($account['daily_used'] / $account['daily_limit']) * 100 : 0; ?>
-                            <div class="<?= $percentage >= 100 ? 'bg-red-600' : 'bg-blue-600' ?> h-2 rounded-full" style="width: <?= min($percentage, 100) ?>%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-600 mt-1">
-                            <span>Usado: R$ <?= number_format($account['daily_used'], 2, ',', '.') ?></span>
-                            <span>Limite: R$ <?= number_format($account['daily_limit'], 2, ',', '.') ?></span>
+                        <label class="text-sm font-medium text-gray-600 mb-1 block">Saldo da Conta</label>
+                        <div class="flex justify-between items-center">
+                            <span class="text-2xl font-bold text-gray-900">R$ <?= number_format($account['balance'] ?? 0, 2, ',', '.') ?></span>
                         </div>
                     </div>
 
@@ -221,11 +216,6 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Limite Diário (R$) *</label>
-                    <input type="number" id="account_daily_limit" name="daily_limit" required min="0" step="0.01" value="50000.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
                 <div class="flex items-center gap-4">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" id="account_is_active" name="is_active" checked class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
@@ -278,7 +268,6 @@ function editAccount(id) {
                 document.getElementById('account_weight').value = account.weight;
                 document.getElementById('account_priority').value = account.priority;
                 document.getElementById('account_max_retries').value = account.max_retries;
-                document.getElementById('account_daily_limit').value = account.daily_limit;
                 document.getElementById('account_is_active').checked = account.is_active;
                 document.getElementById('account_is_default').checked = account.is_default;
                 document.getElementById('accountModal').classList.remove('hidden');

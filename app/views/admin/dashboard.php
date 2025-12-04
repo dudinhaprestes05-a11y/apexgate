@@ -226,16 +226,9 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <div class="mb-3">
-                        <div class="w-full bg-slate-700 rounded-full h-2 mb-2">
-                            <?php
-                            $percentage = $account['daily_limit'] > 0 ? ($account['daily_used'] / $account['daily_limit']) * 100 : 0;
-                            $barColor = $percentage >= 90 ? 'bg-red-500' : ($percentage >= 70 ? 'bg-yellow-500' : 'bg-green-500');
-                            ?>
-                            <div class="<?= $barColor ?> h-2 rounded-full transition-all" style="width: <?= min($percentage, 100) ?>%"></div>
-                        </div>
                         <div class="flex justify-between text-xs">
-                            <span class="text-slate-400">R$ <?= number_format($account['daily_used'], 2, ',', '.') ?></span>
-                            <span class="text-slate-500">R$ <?= number_format($account['daily_limit'], 2, ',', '.') ?></span>
+                            <span class="text-slate-400">Saldo</span>
+                            <span class="text-white font-semibold">R$ <?= number_format($account['balance'] ?? 0, 2, ',', '.') ?></span>
                         </div>
                     </div>
 
