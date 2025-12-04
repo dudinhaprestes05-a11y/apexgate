@@ -41,15 +41,7 @@ try {
             if ($result['success']) {
                 $status = $result['data']['status'] ?? 'processing';
 
-                $updateData = [];
-                if (isset($result['data']['net_amount'])) {
-                    $updateData['net_amount'] = $result['data']['net_amount'];
-                }
-                if (isset($result['data']['fee'])) {
-                    $updateData['fee_amount'] = $result['data']['fee'];
-                }
-
-                $pixCashoutModel->updateStatus($payout['transaction_id'], $status, $updateData);
+                $pixCashoutModel->updateStatus($payout['transaction_id'], $status);
 
                 $logModel->info('worker', 'Payout status updated', [
                     'transaction_id' => $payout['transaction_id'],
