@@ -1321,7 +1321,13 @@ class AdminController {
         $apiBalance = null;
         try {
             require_once __DIR__ . '/../../services/PodPayService.php';
-            $podpayService = new PodPayService($account);
+
+            $accountWithAcquirerData = array_merge($account, [
+                'api_url' => $acquirer['api_url'],
+                'code' => $acquirer['code']
+            ]);
+
+            $podpayService = new PodPayService($accountWithAcquirerData);
             $balanceResult = $podpayService->getAvailableBalance();
 
             if ($balanceResult['success']) {
@@ -1344,7 +1350,7 @@ class AdminController {
             ORDER BY date DESC
         ";
 
-        $dailyStats = $this->db->query($sql, [$accountId])->fetchAll(PDO::FETCH_ASSOC);
+        $dailyStats = $this->cashinModel->query($sql, [$accountId]);
 
         $recentTransactionsSql = "
             SELECT
@@ -1358,7 +1364,7 @@ class AdminController {
             LIMIT 50
         ";
 
-        $recentTransactions = $this->db->query($recentTransactionsSql, [$accountId])->fetchAll(PDO::FETCH_ASSOC);
+        $recentTransactions = $this->cashinModel->query($recentTransactionsSql, [$accountId]);
 
         $statsSql = "
             SELECT
@@ -1373,7 +1379,8 @@ class AdminController {
             WHERE acquirer_account_id = ?
         ";
 
-        $stats = $this->db->query($statsSql, [$accountId])->fetch(PDO::FETCH_ASSOC);
+        $statsResult = $this->cashinModel->query($statsSql, [$accountId]);
+        $stats = $statsResult[0] ?? [];
 
         require_once __DIR__ . '/../../views/admin/acquirer-account-details.php';
     }
