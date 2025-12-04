@@ -1502,16 +1502,22 @@ class AdminController {
     public function getAvailableAccounts() {
         header('Content-Type: application/json');
 
-        $accounts = $this->accountModel->query("
-            SELECT aa.id, aa.name as account_name, aa.account_identifier,
-                   a.name as acquirer_name, a.code as acquirer_code
-            FROM acquirer_accounts aa
-            JOIN acquirers a ON a.id = aa.acquirer_id
-            WHERE aa.is_active = 1 AND a.status = 'active'
-            ORDER BY a.name, aa.name
-        ");
+        try {
+            $accounts = $this->accountModel->query("
+                SELECT aa.id, aa.name as account_name, aa.account_identifier,
+                       a.name as acquirer_name, a.code as acquirer_code
+                FROM acquirer_accounts aa
+                JOIN acquirers a ON a.id = aa.acquirer_id
+                WHERE aa.is_active = 1 AND a.status = 'active'
+                ORDER BY a.name, aa.name
+            ");
 
-        echo json_encode(['success' => true, 'accounts' => $accounts]);
+            echo json_encode(['success' => true, 'accounts' => $accounts]);
+        } catch (Exception $e) {
+            error_log("Error in getAvailableAccounts: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
         exit;
     }
 

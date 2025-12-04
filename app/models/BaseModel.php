@@ -142,9 +142,14 @@ abstract class BaseModel {
     }
 
     public function query($sql, $params = []) {
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Query Error: " . $e->getMessage() . " SQL: " . $sql);
+            throw $e;
+        }
     }
 
     public function execute($sql, $params = []) {
