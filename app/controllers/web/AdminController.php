@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../models/PixCashin.php';
 require_once __DIR__ . '/../../models/PixCashout.php';
 require_once __DIR__ . '/../../models/Acquirer.php';
 require_once __DIR__ . '/../../models/AcquirerAccount.php';
+require_once __DIR__ . '/../../models/SellerAcquirerAccount.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../../models/Log.php';
 require_once __DIR__ . '/../../models/SystemSettings.php';
@@ -20,6 +21,7 @@ class AdminController {
     private $cashoutModel;
     private $acquirerModel;
     private $accountModel;
+    private $sellerAccountModel;
     private $userModel;
     private $logModel;
     private $settingsModel;
@@ -35,6 +37,7 @@ class AdminController {
         $this->cashoutModel = new PixCashout();
         $this->acquirerModel = new Acquirer();
         $this->accountModel = new AcquirerAccount();
+        $this->sellerAccountModel = new SellerAcquirerAccount();
         $this->userModel = new User();
         $this->logModel = new Log();
         $this->settingsModel = new SystemSettings();
@@ -121,7 +124,7 @@ class AdminController {
             $this->cashinModel->getRecentBySeller($sellerId, 5),
             $this->cashoutModel->getRecentBySeller($sellerId, 5)
         );
-        $accounts = $this->accountModel->getAccountsBySellerWithStats($sellerId);
+        $accounts = $this->sellerAccountModel->getBySellerWithDetails($sellerId);
 
         $requiredDocs = ['rg', 'cpf', 'selfie'];
         $missingDocs = [];
@@ -1440,6 +1443,163 @@ class AdminController {
         ";
 
         return $this->accountModel->query($sql);
+    }
+
+    public function getSellerAcquirerAccounts($sellerId) {
+        header('Content-Type: application/json');
+
+        $accounts = $this->sellerAccountModel->getBySellerWithDetails($sellerId);
+
+        echo json_encode(['success' => true, 'accounts' => $accounts]);
+        exit;
+    }
+
+    public function assignAccountToSeller($sellerId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $accountId = $data['account_id'] ?? null;
+        $priority = $data['priority'] ?? 1;
+        $isActive = $data['is_active'] ?? true;
+
+        if (!$accountId) {
+            echo json_encode(['success' => false, 'error' => 'Account ID é obrigatório']);
+            exit;
+        }
+
+        $result = $this->sellerAccountModel->assignAccountToSeller($sellerId, $accountId, $priority, $isActive);
+
+        if ($result) {
+            $this->logModel->info('admin', 'Conta atribuída ao seller', [
+                'seller_id' => $sellerId,
+                'account_id' => $accountId,
+                'priority' => $priority,
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Conta atribuída com sucesso!']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Falha ao atribuir conta']);
+        }
+        exit;
+    }
+
+    public function removeAccountFromSeller($sellerId, $accountId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $result = $this->sellerAccountModel->removeAccountFromSeller($sellerId, $accountId);
+
+        if ($result) {
+            $this->logModel->info('admin', 'Conta removida do seller', [
+                'seller_id' => $sellerId,
+                'account_id' => $accountId,
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Conta removida com sucesso!']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Falha ao remover conta']);
+        }
+        exit;
+    }
+
+    public function updateSellerAccountPriority() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $sellerId = $data['seller_id'] ?? null;
+        $accountIds = $data['account_ids'] ?? [];
+
+        if (!$sellerId || empty($accountIds)) {
+            echo json_encode(['success' => false, 'error' => 'Dados inválidos']);
+            exit;
+        }
+
+        $result = $this->sellerAccountModel->reorderPriorities($sellerId, $accountIds);
+
+        if ($result) {
+            $this->logModel->info('admin', 'Prioridades das contas atualizadas', [
+                'seller_id' => $sellerId,
+                'account_ids' => $accountIds,
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Prioridades atualizadas com sucesso!']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Falha ao atualizar prioridades']);
+        }
+        exit;
+    }
+
+    public function toggleSellerAccountStatus($sellerId, $accountId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $sellerAccount = $this->sellerAccountModel->where([
+            'seller_id' => $sellerId,
+            'acquirer_account_id' => $accountId
+        ]);
+
+        if (empty($sellerAccount)) {
+            echo json_encode(['success' => false, 'error' => 'Associação não encontrada']);
+            exit;
+        }
+
+        $result = $this->sellerAccountModel->toggleActive($sellerAccount[0]['id']);
+
+        if ($result) {
+            $this->logModel->info('admin', 'Status da conta do seller alterado', [
+                'seller_id' => $sellerId,
+                'account_id' => $accountId,
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Status atualizado com sucesso!']);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Falha ao atualizar status']);
+        }
+        exit;
+    }
+
+    public function getAvailableAccounts() {
+        header('Content-Type: application/json');
+
+        $accounts = $this->accountModel->query("
+            SELECT aa.id, aa.name as account_name, aa.account_identifier,
+                   a.name as acquirer_name, a.code as acquirer_code
+            FROM acquirer_accounts aa
+            JOIN acquirers a ON a.id = aa.acquirer_id
+            WHERE aa.is_active = 1 AND a.status = 'active'
+            ORDER BY a.name, aa.name
+        ");
+
+        echo json_encode(['success' => true, 'accounts' => $accounts]);
+        exit;
     }
 
 }

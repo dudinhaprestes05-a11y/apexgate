@@ -235,4 +235,33 @@ class AcquirerAccount extends BaseModel {
             [$acquirerId]
         );
     }
+
+    public function getNextAccountFromList($accountIds, $amount, $transactionType = 'cashin') {
+        if (empty($accountIds)) {
+            return null;
+        }
+
+        $limitField = $transactionType === 'cashin' ? 'max_cashin_per_transaction' : 'max_cashout_per_transaction';
+        $minLimitField = $transactionType === 'cashin' ? 'min_cashin_per_transaction' : 'min_cashout_per_transaction';
+
+        $placeholders = implode(',', array_fill(0, count($accountIds), '?'));
+
+        $sql = "
+            SELECT aa.*, a.name as acquirer_name, a.code as acquirer_code,
+                   a.api_url as base_url
+            FROM acquirer_accounts aa
+            JOIN acquirers a ON a.id = aa.acquirer_id
+            WHERE aa.id IN ({$placeholders})
+                AND aa.is_active = 1
+                AND a.status = 'active'
+                AND ? >= aa.{$minLimitField}
+                AND (aa.{$limitField} IS NULL OR ? <= aa.{$limitField})
+            ORDER BY FIELD(aa.id, {$placeholders})
+            LIMIT 1
+        ";
+
+        $params = array_merge($accountIds, [$amount, $amount], $accountIds);
+        $result = $this->query($sql, $params);
+        return $result[0] ?? null;
+    }
 }

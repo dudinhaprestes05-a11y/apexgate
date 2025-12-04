@@ -2,16 +2,19 @@
 
 require_once __DIR__ . '/../models/Acquirer.php';
 require_once __DIR__ . '/../models/AcquirerAccount.php';
+require_once __DIR__ . '/../models/SellerAcquirerAccount.php';
 require_once __DIR__ . '/../models/Log.php';
 
 class AcquirerService {
     private $acquirerModel;
     private $accountModel;
+    private $sellerAccountModel;
     private $logModel;
 
     public function __construct() {
         $this->acquirerModel = new Acquirer();
         $this->accountModel = new AcquirerAccount();
+        $this->sellerAccountModel = new SellerAcquirerAccount();
         $this->logModel = new Log();
     }
 
@@ -316,6 +319,42 @@ class AcquirerService {
     }
 
     public function selectAccountForSeller($sellerId, $amount, $transactionType = 'cashin', $excludeAccountIds = []) {
+        $hasSellerAccounts = $this->sellerAccountModel->hasSellerAccounts($sellerId);
+
+        if ($hasSellerAccounts) {
+            $sellerAccountIds = $this->sellerAccountModel->getAccountsBySeller($sellerId);
+
+            $sellerAccountIds = array_diff($sellerAccountIds, $excludeAccountIds);
+
+            if (empty($sellerAccountIds)) {
+                $this->logModel->error('acquirer', 'No available seller-specific accounts', [
+                    'seller_id' => $sellerId,
+                    'amount' => $amount,
+                    'transaction_type' => $transactionType,
+                    'excluded_ids' => $excludeAccountIds
+                ]);
+                return null;
+            }
+
+            $account = $this->accountModel->getNextAccountFromList(
+                $sellerAccountIds,
+                $amount,
+                $transactionType
+            );
+
+            if ($account) {
+                $this->logModel->info('acquirer', 'Seller-specific account selected', [
+                    'seller_id' => $sellerId,
+                    'account_id' => $account['id'],
+                    'account_name' => $account['name'],
+                    'acquirer_code' => $account['acquirer_code'],
+                    'amount' => $amount
+                ]);
+
+                return $account;
+            }
+        }
+
         $account = $this->accountModel->getNextAccountForSellerWithAmount(
             $sellerId,
             $amount,
@@ -328,7 +367,8 @@ class AcquirerService {
                 'seller_id' => $sellerId,
                 'amount' => $amount,
                 'transaction_type' => $transactionType,
-                'excluded_ids' => $excludeAccountIds
+                'excluded_ids' => $excludeAccountIds,
+                'has_seller_accounts' => $hasSellerAccounts
             ]);
             return null;
         }
@@ -338,7 +378,8 @@ class AcquirerService {
             'account_id' => $account['id'],
             'account_name' => $account['name'],
             'acquirer_code' => $account['acquirer_code'],
-            'amount' => $amount
+            'amount' => $amount,
+            'used_default_selection' => !$hasSellerAccounts
         ]);
 
         return $account;

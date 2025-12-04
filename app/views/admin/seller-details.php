@@ -384,15 +384,18 @@ $statusColors = [
 
         <!-- Processing Accounts -->
         <div class="card p-6">
-            <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-between">
-                <span>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center">
                     <i class="fas fa-wallet text-green-500 mr-2"></i>
                     Contas de Processamento
-                </span>
-                <span class="text-sm text-slate-400">
-                    <?= isset($accounts) ? count($accounts) : 0 ?> conta(s)
-                </span>
-            </h3>
+                    <span class="text-sm text-slate-400 ml-3 font-normal">
+                        <?= isset($accounts) ? count($accounts) : 0 ?> conta(s)
+                    </span>
+                </h3>
+                <button onclick="openAddAccountModal()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">
+                    <i class="fas fa-plus mr-2"></i>Adicionar Conta
+                </button>
+            </div>
 
             <?php if (empty($accounts)): ?>
                 <div class="text-center py-12 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
@@ -403,25 +406,38 @@ $statusColors = [
             <?php else: ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <?php foreach ($accounts as $account): ?>
-                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700" data-account-id="<?= $account['acquirer_account_id'] ?>">
                         <div class="flex items-start justify-between mb-3">
-                            <div>
+                            <div class="flex-1">
                                 <h4 class="font-semibold text-white"><?= htmlspecialchars($account['account_name']) ?></h4>
-                                <p class="text-sm text-slate-400 mt-1">Processador de Pagamento</p>
+                                <p class="text-sm text-slate-400 mt-1">
+                                    <i class="fas fa-building mr-1"></i>
+                                    <?= htmlspecialchars($account['acquirer_name']) ?>
+                                </p>
                             </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full <?= $account['is_active'] && $account['account_active'] ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' ?>">
-                                <?= $account['is_active'] && $account['account_active'] ? 'Ativa' : 'Inativa' ?>
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full <?= $account['is_active'] && $account['account_active'] ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' ?>">
+                                    <?= $account['is_active'] && $account['account_active'] ? 'Ativa' : 'Inativa' ?>
+                                </span>
+                                <button onclick="toggleAccountStatus(<?= $account['acquirer_account_id'] ?>)" class="text-slate-400 hover:text-white text-sm">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                                <button onclick="removeAccount(<?= $account['acquirer_account_id'] ?>)" class="text-red-400 hover:text-red-300 text-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 mb-3">
                             <div>
                                 <p class="text-xs text-slate-500">Prioridade</p>
-                                <p class="text-sm font-medium text-white"><?= $account['priority'] ?></p>
+                                <p class="text-sm font-medium text-white">
+                                    <i class="fas fa-sort text-slate-500 mr-1"></i><?= $account['priority'] ?>
+                                </p>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-500">Estratégia</p>
-                                <p class="text-sm font-medium text-white capitalize"><?= htmlspecialchars($account['distribution_strategy']) ?></p>
+                                <p class="text-xs text-slate-500">Código</p>
+                                <p class="text-sm font-medium text-white uppercase"><?= htmlspecialchars($account['acquirer_type']) ?></p>
                             </div>
                         </div>
 
@@ -435,8 +451,10 @@ $statusColors = [
                                 <p class="text-sm font-bold text-green-400">R$ <?= number_format($account['total_volume'] ?? 0, 2, ',', '.') ?></p>
                             </div>
                             <div class="text-center">
-                                <p class="text-xs text-slate-500">% Alocação</p>
-                                <p class="text-sm font-bold text-blue-400"><?= $account['percentage_allocation'] ?? 0 ?>%</p>
+                                <p class="text-xs text-slate-500">Identificador</p>
+                                <p class="text-xs font-medium text-slate-300 truncate" title="<?= htmlspecialchars($account['account_identifier']) ?>">
+                                    <?= htmlspecialchars(substr($account['account_identifier'], 0, 8)) ?>...
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -874,6 +892,138 @@ function rejectDocument() {
     })
     .catch(error => {
         alert('Erro ao rejeitar documento');
+    });
+}
+
+function openAddAccountModal() {
+    fetch('/admin/accounts/available')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAccountSelectionModal(data.accounts);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao carregar contas disponíveis');
+        });
+}
+
+function showAccountSelectionModal(accounts) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-slate-900 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white">Adicionar Conta de Processamento</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Selecione uma conta</label>
+                    <select id="accountSelect" class="w-full px-4 py-2.5 rounded-lg">
+                        <option value="">Selecione...</option>
+                        ${accounts.map(acc => `
+                            <option value="${acc.id}">
+                                ${acc.acquirer_name} - ${acc.account_name} (${acc.account_identifier})
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Prioridade</label>
+                    <input type="number" id="accountPriority" value="1" min="1" class="w-full px-4 py-2.5 rounded-lg">
+                    <p class="text-xs text-slate-500 mt-1">Menor número = maior prioridade</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg">
+                    Cancelar
+                </button>
+                <button onclick="addAccount()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                    <i class="fas fa-plus mr-2"></i>Adicionar
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function addAccount() {
+    const accountId = document.getElementById('accountSelect').value;
+    const priority = document.getElementById('accountPriority').value;
+
+    if (!accountId) {
+        alert('Selecione uma conta');
+        return;
+    }
+
+    fetch(`/admin/sellers/<?= $seller['id'] ?>/accounts/assign`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            account_id: parseInt(accountId),
+            priority: parseInt(priority)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Erro ao adicionar conta');
+        }
+    })
+    .catch(error => {
+        alert('Erro ao adicionar conta');
+    });
+}
+
+function removeAccount(accountId) {
+    if (!confirm('Tem certeza que deseja remover esta conta?')) {
+        return;
+    }
+
+    fetch(`/admin/sellers/<?= $seller['id'] ?>/accounts/${accountId}/remove`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Erro ao remover conta');
+        }
+    })
+    .catch(error => {
+        alert('Erro ao remover conta');
+    });
+}
+
+function toggleAccountStatus(accountId) {
+    fetch(`/admin/sellers/<?= $seller['id'] ?>/accounts/${accountId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Erro ao alterar status');
+        }
+    })
+    .catch(error => {
+        alert('Erro ao alterar status');
     });
 }
 </script>

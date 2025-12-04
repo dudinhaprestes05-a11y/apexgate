@@ -306,6 +306,16 @@ try {
         $controller = new AdminController();
         $controller->toggleSellerAccountStatus($matches[1], $matches[2]);
     }
+    elseif (preg_match('#^/admin/sellers/(\d+)/accounts/reorder$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->updateSellerAccountPriority();
+    }
+    elseif ($uri === '/admin/accounts/available') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->getAvailableAccounts();
+    }
     elseif ($uri === '/admin/reports') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
