@@ -479,6 +479,7 @@ class AcquirerService {
 
         return [
             'id' => $account['acquirer_id'],
+            'acquirer_id' => $account['acquirer_id'],
             'code' => $account['acquirer_code'],
             'api_url' => $account['base_url'],
             'client_id' => $account['client_id'],
