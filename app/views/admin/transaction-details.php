@@ -3,9 +3,9 @@ $pageTitle = 'Detalhes da Transação';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
-        <a href="/seller/transactions" class="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
+        <a href="/admin/transactions" class="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
             <i class="fas fa-arrow-left mr-1"></i>Voltar
         </a>
         <h1 class="text-3xl font-bold text-gray-900">Detalhes da Transação</h1>
@@ -70,11 +70,49 @@ require_once __DIR__ . '/../layouts/header.php';
                         <?php endif; ?>
                     </div>
                     <?php if ($transaction['external_id']): ?>
-                    <div class="col-span-2">
+                    <div>
                         <label class="text-sm font-medium text-gray-600">ID Externo</label>
-                        <p class="text-gray-900 mt-1 font-mono text-sm"><?= htmlspecialchars($transaction['external_id']) ?></p>
+                        <p class="text-gray-900 mt-1 font-mono text-sm break-all"><?= htmlspecialchars($transaction['external_id']) ?></p>
                     </div>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Informações do Seller</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">ID</label>
+                        <p class="text-gray-900 mt-1">
+                            <a href="/admin/sellers/view/<?= $seller['id'] ?>" class="text-blue-600 hover:underline">
+                                #<?= $seller['id'] ?>
+                            </a>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Nome</label>
+                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['name']) ?></p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Email</label>
+                        <p class="text-gray-900 mt-1"><?= htmlspecialchars($seller['email']) ?></p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Status</label>
+                        <p class="text-gray-900 mt-1">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                                <?php
+                                echo match($seller['status']) {
+                                    'active' => 'bg-green-100 text-green-800',
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'blocked' => 'bg-red-100 text-red-800',
+                                    default => 'bg-gray-100 text-gray-800'
+                                };
+                                ?>">
+                                <?= ucfirst($seller['status']) ?>
+                            </span>
+                        </p>
+                    </div>
                 </div>
             </div>
 

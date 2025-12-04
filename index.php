@@ -176,6 +176,11 @@ try {
         $controller = new AdminController();
         $controller->transactions();
     }
+    elseif (preg_match('#^/admin/transactions/(\d+)/(cashin|cashout)$#', $uri, $matches)) {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->transactionDetails($matches[1], $matches[2]);
+    }
     elseif ($uri === '/admin/acquirers') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();

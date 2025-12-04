@@ -39,9 +39,10 @@ require_once __DIR__ . '/../layouts/header.php';
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Total Recebido</p>
+                <div class="flex-1">
+                    <p class="text-gray-600 text-sm font-medium">Total Recebido (Bruto)</p>
                     <p class="text-2xl font-bold text-gray-900 mt-2">R$ <?= number_format($stats['total_cashin'], 2, ',', '.') ?></p>
+                    <p class="text-xs text-gray-500 mt-1">Líquido: R$ <?= number_format($stats['total_cashin_net'], 2, ',', '.') ?></p>
                 </div>
                 <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                     <i class="fas fa-arrow-down text-white text-xl"></i>

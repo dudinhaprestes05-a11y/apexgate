@@ -309,20 +309,53 @@ class AdminController {
 
         $type = $_GET['type'] ?? 'all';
         $status = $_GET['status'] ?? '';
+        $search = $_GET['search'] ?? '';
 
-        if ($type === 'cashin' || $type === 'all') {
-            $cashin = $this->cashinModel->all('created_at DESC', $perPage, $offset);
-        } else {
-            $cashin = [];
-        }
+        if (!empty($search)) {
+            if ($type === 'cashin' || $type === 'all') {
+                $cashin = $this->cashinModel->search($search, $status, $perPage, $offset);
+            } else {
+                $cashin = [];
+            }
 
-        if ($type === 'cashout' || $type === 'all') {
-            $cashout = $this->cashoutModel->all('created_at DESC', $perPage, $offset);
+            if ($type === 'cashout' || $type === 'all') {
+                $cashout = $this->cashoutModel->search($search, $status, $perPage, $offset);
+            } else {
+                $cashout = [];
+            }
         } else {
-            $cashout = [];
+            if ($type === 'cashin' || $type === 'all') {
+                $cashin = $this->cashinModel->all('created_at DESC', $perPage, $offset);
+            } else {
+                $cashin = [];
+            }
+
+            if ($type === 'cashout' || $type === 'all') {
+                $cashout = $this->cashoutModel->all('created_at DESC', $perPage, $offset);
+            } else {
+                $cashout = [];
+            }
         }
 
         require __DIR__ . '/../../views/admin/transactions.php';
+    }
+
+    public function transactionDetails($transactionId, $type) {
+        if ($type === 'cashin') {
+            $transaction = $this->cashinModel->find($transactionId);
+        } else {
+            $transaction = $this->cashoutModel->find($transactionId);
+        }
+
+        if (!$transaction) {
+            $_SESSION['error'] = 'Transação não encontrada';
+            header('Location: /admin/transactions');
+            exit;
+        }
+
+        $seller = $this->sellerModel->find($transaction['seller_id']);
+
+        require __DIR__ . '/../../views/admin/transaction-details.php';
     }
 
     public function acquirers() {

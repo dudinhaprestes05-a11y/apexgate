@@ -228,6 +228,66 @@ class PixCashout extends BaseModel {
         return $stmt->fetch();
     }
 
+    public function search($search, $status = '', $limit = 20, $offset = 0) {
+        $params = [];
+        $whereClause = '1=1';
+
+        $searchPattern = "%{$search}%";
+        $whereClause .= ' AND (transaction_id LIKE ? OR pix_key LIKE ?)';
+        $params[] = $searchPattern;
+        $params[] = $searchPattern;
+
+        if (!empty($status)) {
+            $whereClause .= ' AND status = ?';
+            $params[] = $status;
+        }
+
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE {$whereClause}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        ";
+
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
+    public function searchBySeller($sellerId, $search, $status = '', $limit = 20, $offset = 0) {
+        $params = [$sellerId];
+        $whereClause = 'seller_id = ?';
+
+        $searchPattern = "%{$search}%";
+        $whereClause .= ' AND (transaction_id LIKE ? OR pix_key LIKE ?)';
+        $params[] = $searchPattern;
+        $params[] = $searchPattern;
+
+        if (!empty($status)) {
+            $whereClause .= ' AND status = ?';
+            $params[] = $status;
+        }
+
+        $sql = "
+            SELECT * FROM {$this->table}
+            WHERE {$whereClause}
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+        ";
+
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     public function getBySeller($sellerId, $status = '', $limit = 20, $offset = 0) {
         $params = [$sellerId];
         $whereClause = 'seller_id = ?';

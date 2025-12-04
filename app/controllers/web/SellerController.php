@@ -35,6 +35,7 @@ class SellerController {
         $stats = [
             'balance' => $seller['balance'],
             'total_cashin' => $this->cashinModel->getTotalAmountBySeller($this->sellerId),
+            'total_cashin_net' => $this->cashinModel->getTotalNetAmountBySeller($this->sellerId),
             'total_cashout' => $this->cashoutModel->getTotalAmountBySeller($this->sellerId),
             'pending_cashin' => $this->cashinModel->countByStatus($this->sellerId, 'waiting_payment'),
             'approved_cashin' => $this->cashinModel->countByStatus($this->sellerId, 'approved'),
@@ -121,17 +122,32 @@ class SellerController {
 
         $type = $_GET['type'] ?? 'all';
         $status = $_GET['status'] ?? '';
+        $search = $_GET['search'] ?? '';
 
-        if ($type === 'cashin' || $type === 'all') {
-            $cashin = $this->cashinModel->getBySeller($this->sellerId, $status, $perPage, $offset);
-        } else {
-            $cashin = [];
-        }
+        if (!empty($search)) {
+            if ($type === 'cashin' || $type === 'all') {
+                $cashin = $this->cashinModel->searchBySeller($this->sellerId, $search, $status, $perPage, $offset);
+            } else {
+                $cashin = [];
+            }
 
-        if ($type === 'cashout' || $type === 'all') {
-            $cashout = $this->cashoutModel->getBySeller($this->sellerId, $status, $perPage, $offset);
+            if ($type === 'cashout' || $type === 'all') {
+                $cashout = $this->cashoutModel->searchBySeller($this->sellerId, $search, $status, $perPage, $offset);
+            } else {
+                $cashout = [];
+            }
         } else {
-            $cashout = [];
+            if ($type === 'cashin' || $type === 'all') {
+                $cashin = $this->cashinModel->getBySeller($this->sellerId, $status, $perPage, $offset);
+            } else {
+                $cashin = [];
+            }
+
+            if ($type === 'cashout' || $type === 'all') {
+                $cashout = $this->cashoutModel->getBySeller($this->sellerId, $status, $perPage, $offset);
+            } else {
+                $cashout = [];
+            }
         }
 
         require __DIR__ . '/../../views/seller/transactions.php';

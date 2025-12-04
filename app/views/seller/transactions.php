@@ -14,28 +14,36 @@ $status = $_GET['status'] ?? '';
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <form method="GET" action="/seller/transactions" class="flex items-end gap-4">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                <select name="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="all" <?= $type === 'all' ? 'selected' : '' ?>>Todas</option>
-                    <option value="cashin" <?= $type === 'cashin' ? 'selected' : '' ?>>Recebimentos</option>
-                    <option value="cashout" <?= $type === 'cashout' ? 'selected' : '' ?>>Saques</option>
-                </select>
+        <form method="GET" action="/seller/transactions" class="space-y-4">
+            <div class="flex items-end gap-4">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pesquisar</label>
+                    <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
+                           placeholder="ID da transação, documento, nome ou email"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                    <select name="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="all" <?= $type === 'all' ? 'selected' : '' ?>>Todas</option>
+                        <option value="cashin" <?= $type === 'cashin' ? 'selected' : '' ?>>Recebimentos</option>
+                        <option value="cashout" <?= $type === 'cashout' ? 'selected' : '' ?>>Saques</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Todos</option>
+                        <option value="waiting_payment" <?= $status === 'waiting_payment' ? 'selected' : '' ?>>Aguardando</option>
+                        <option value="approved" <?= $status === 'approved' ? 'selected' : '' ?>>Aprovado</option>
+                        <option value="paid" <?= $status === 'paid' ? 'selected' : '' ?>>Pago</option>
+                        <option value="cancelled" <?= $status === 'cancelled' ? 'selected' : '' ?>>Cancelado</option>
+                    </select>
+                </div>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-search mr-2"></i>Buscar
+                </button>
             </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Todos</option>
-                    <option value="waiting_payment" <?= $status === 'waiting_payment' ? 'selected' : '' ?>>Aguardando</option>
-                    <option value="approved" <?= $status === 'approved' ? 'selected' : '' ?>>Aprovado</option>
-                    <option value="paid" <?= $status === 'paid' ? 'selected' : '' ?>>Pago</option>
-                    <option value="cancelled" <?= $status === 'cancelled' ? 'selected' : '' ?>>Cancelado</option>
-                </select>
-            </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-filter mr-2"></i>Filtrar
-            </button>
         </form>
     </div>
 
