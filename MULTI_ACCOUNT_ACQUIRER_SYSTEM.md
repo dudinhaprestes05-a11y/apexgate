@@ -13,10 +13,20 @@ O sistema agora suporta múltiplas contas para uma mesma adquirente (ex: PodPay)
 
 ### 2. Contas de Adquirente (acquirer_accounts)
 - Representa **contas individuais** de uma adquirente
-- Cada conta tem suas próprias credenciais (client_id, client_secret, merchant_id)
-- Cada conta tem um nome identificador (ex: "Conta Principal", "Conta Backup", etc)
+- Cada conta tem suas próprias credenciais e identificadores:
+  - **`account_identifier`**: Identificador único para exibição (ex: "ACC-000001", "ACC-000002")
+  - **`client_id` + `client_secret`**: Credenciais de autenticação (usadas em TODAS as requisições)
+  - **`merchant_id`**: Chave de saque (x-withdraw-key, usada APENAS em cashout)
+- Cada conta tem um nome descritivo (ex: "Conta Principal", "Conta Backup", etc)
 - Pode rastrear saldo disponível
 - Pode ser ativada/desativada individualmente
+
+**IMPORTANTE**: Não confunda os identificadores:
+- Use `client_id` + `client_secret` para autenticação em TODAS as APIs
+- Use `merchant_id` como header `x-withdraw-key` SOMENTE em operações de cashout
+- Use `account_identifier` para exibição e rastreamento interno
+
+Para detalhes completos, veja [ACCOUNT_IDENTIFIERS.md](ACCOUNT_IDENTIFIERS.md)
 
 ### 3. Relacionamento Seller-Conta (seller_acquirer_accounts)
 - Define quais contas cada seller pode usar

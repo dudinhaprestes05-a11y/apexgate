@@ -9,7 +9,7 @@ class SellerAcquirerAccount extends BaseModel {
         $sql = "SELECT
                     saa.*,
                     aa.name as account_name,
-                    aa.merchant_id as account_identifier,
+                    aa.account_identifier,
                     aa.is_active as account_active,
                     aa.balance as account_balance,
                     a.name as acquirer_name,
@@ -29,9 +29,10 @@ class SellerAcquirerAccount extends BaseModel {
         $sql = "SELECT
                     saa.*,
                     aa.name as account_name,
-                    aa.merchant_id as account_identifier,
+                    aa.account_identifier,
                     aa.client_id,
                     aa.client_secret,
+                    aa.merchant_id,
                     aa.balance,
                     a.name as acquirer_name,
                     a.code as acquirer_type,
