@@ -279,10 +279,6 @@ Content-Type: application/json</pre>
       "name": "João Silva",
       "document": "12345678900",
       "email": "joao@email.com"
-    },
-    "metadata": {
-      "order_id": "12345",
-      "product": "Plano Premium"
     }
   }'</pre>
                         </div>
