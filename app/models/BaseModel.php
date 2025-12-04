@@ -15,6 +15,10 @@ abstract class BaseModel {
         return $stmt->fetch();
     }
 
+    public function findById($id) {
+        return $this->find($id);
+    }
+
     public function findBy($column, $value) {
         $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE {$column} = ? LIMIT 1");
         $stmt->execute([$value]);
