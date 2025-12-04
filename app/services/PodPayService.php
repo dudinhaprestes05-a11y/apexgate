@@ -126,12 +126,15 @@ class PodPayService {
                 throw new Exception('Withdraw key not configured for this acquirer');
             }
 
+            $webhookUrl = BASE_URL . '/api/webhook/acquirer?acquirer=' . $this->acquirer['code'];
+
             $payload = [
                 'method' => 'fiat',
                 'amount' => (int)($data['amount'] * 100),
                 'pixKey' => $data['pix_key'],
                 'pixKeyType' => $data['pix_key_type'],
-                'netPayout' => $data['net_payout'] ?? true
+                'netPayout' => $data['net_payout'] ?? true,
+                'postbackUrl' => $webhookUrl
             ];
 
             if (isset($data['external_id'])) {
