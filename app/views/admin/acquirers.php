@@ -85,18 +85,6 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="text-sm font-medium text-gray-600 mb-1 block">Limite Diário</label>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <?php $percentage = ($acquirer['daily_limit'] > 0) ? ($acquirer['daily_used'] / $acquirer['daily_limit']) * 100 : 0; ?>
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: <?= min($percentage, 100) ?>%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-600 mt-1">
-                            <span>Usado: R$ <?= number_format($acquirer['daily_used'], 2, ',', '.') ?></span>
-                            <span>Limite: R$ <?= number_format($acquirer['daily_limit'], 2, ',', '.') ?></span>
-                        </div>
-                    </div>
-
                     <div>
                         <label class="text-sm font-medium text-gray-600">URL da API</label>
                         <p class="text-gray-700 mt-1 text-sm font-mono break-all"><?= htmlspecialchars($acquirer['api_url']) ?></p>
@@ -197,10 +185,6 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Limite Diário (R$) *</label>
-                    <input type="number" id="acquirer_daily_limit" name="daily_limit" required min="0" step="0.01" value="100000.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
             </div>
 
             <div class="mt-6 flex gap-3">
@@ -240,7 +224,6 @@ function editAcquirer(id) {
                 document.getElementById('acquirer_api_key').value = data.acquirer.api_key || '';
                 document.getElementById('acquirer_priority').value = data.acquirer.priority_order;
                 document.getElementById('acquirer_status').value = data.acquirer.status;
-                document.getElementById('acquirer_daily_limit').value = data.acquirer.daily_limit;
 
                 const config = data.acquirer.config ? JSON.parse(data.acquirer.config) : {};
                 document.getElementById('acquirer_withdraw_key').value = config.withdraw_key || '';

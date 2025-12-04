@@ -109,24 +109,6 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Limites</h3>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-sm text-gray-600">Limite Diário</span>
-                            <span class="text-sm font-medium text-gray-900">R$ <?= number_format($seller['daily_limit'], 2, ',', '.') ?></span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <?php
-                            $percentage = ($seller['daily_used'] / $seller['daily_limit']) * 100;
-                            ?>
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: <?= min($percentage, 100) ?>%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Usado: R$ <?= number_format($seller['daily_used'], 2, ',', '.') ?></p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>

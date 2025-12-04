@@ -655,26 +655,6 @@ $statusColors = [
         </div>
         <?php endif; ?>
 
-        <!-- Limits -->
-        <div class="card p-6">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
-                <i class="fas fa-chart-line text-green-500 mr-2"></i>
-                Limites
-            </h3>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-slate-400">Limite Diário</span>
-                        <span class="text-sm font-bold text-white">R$ <?= number_format($seller['daily_limit'], 0, ',', '.') ?></span>
-                    </div>
-                    <div class="w-full bg-slate-700 rounded-full h-2">
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style="width: <?= min(100, ($seller['daily_used'] / $seller['daily_limit']) * 100) ?>%"></div>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1">Utilizado: R$ <?= number_format($seller['daily_used'], 2, ',', '.') ?></p>
-                </div>
-            </div>
-        </div>
-
         <!-- Documents -->
         <div class="card p-6">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-between">

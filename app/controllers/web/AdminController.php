@@ -175,8 +175,7 @@ class AdminController {
             'api_key' => $apiKey,
             'api_secret' => hash('sha256', $apiSecret),
             'approved_by' => $_SESSION['user_id'],
-            'approved_at' => date('Y-m-d H:i:s'),
-            'daily_reset_at' => date('Y-m-d')
+            'approved_at' => date('Y-m-d H:i:s')
         ]);
 
         $this->notificationService->notifyAccountApproved($sellerId, $apiKey, $apiSecret);
@@ -422,7 +421,6 @@ class AdminController {
         $withdrawKey = trim($_POST['withdraw_key'] ?? '');
         $priorityOrder = intval($_POST['priority_order'] ?? 1);
         $status = $_POST['status'] ?? 'active';
-        $dailyLimit = floatval($_POST['daily_limit'] ?? 100000.00);
 
         if (empty($name) || empty($code) || empty($apiUrl)) {
             echo json_encode(['success' => false, 'error' => 'Nome, código e URL são obrigatórios']);
@@ -458,9 +456,6 @@ class AdminController {
             'api_secret' => $apiSecret ?: null,
             'priority_order' => $priorityOrder,
             'status' => $status,
-            'daily_limit' => $dailyLimit,
-            'daily_used' => 0,
-            'daily_reset_at' => date('Y-m-d'),
             'success_rate' => 100.00,
             'avg_response_time' => 0,
             'config' => !empty($config) ? json_encode($config) : null
@@ -502,7 +497,6 @@ class AdminController {
         $withdrawKey = trim($_POST['withdraw_key'] ?? '');
         $priorityOrder = intval($_POST['priority_order'] ?? 1);
         $status = $_POST['status'] ?? 'active';
-        $dailyLimit = floatval($_POST['daily_limit'] ?? 100000.00);
 
         if (empty($name) || empty($code) || empty($apiUrl)) {
             echo json_encode(['success' => false, 'error' => 'Nome, código e URL são obrigatórios']);
@@ -540,7 +534,6 @@ class AdminController {
             'api_url' => $apiUrl,
             'priority_order' => $priorityOrder,
             'status' => $status,
-            'daily_limit' => $dailyLimit,
             'config' => !empty($existingConfig) ? json_encode($existingConfig) : null
         ];
 
@@ -598,36 +591,6 @@ class AdminController {
         ]);
 
         echo json_encode(['success' => true, 'message' => 'Status alterado com sucesso!']);
-        exit;
-    }
-
-    public function resetAcquirerLimit($acquirerId) {
-        header('Content-Type: application/json');
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
-            exit;
-        }
-
-        $acquirer = $this->acquirerModel->find($acquirerId);
-        if (!$acquirer) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'error' => 'Adquirente não encontrada']);
-            exit;
-        }
-
-        $this->acquirerModel->update($acquirerId, [
-            'daily_used' => 0,
-            'daily_reset_at' => date('Y-m-d')
-        ]);
-
-        $this->logModel->info('admin', 'Limite diário da adquirente resetado', [
-            'acquirer_id' => $acquirerId,
-            'admin_id' => $_SESSION['user_id']
-        ]);
-
-        echo json_encode(['success' => true, 'message' => 'Limite diário resetado!']);
         exit;
     }
 
@@ -1313,26 +1276,6 @@ class AdminController {
         ]);
 
         echo json_encode(['success' => true, 'message' => 'Status atualizado com sucesso!']);
-        exit;
-    }
-
-    public function resetAcquirerAccountLimit($accountId) {
-        header('Content-Type: application/json');
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
-            exit;
-        }
-
-        $this->accountModel->update($accountId, ['daily_used' => 0]);
-
-        $this->logModel->info('admin', 'Limite diário da conta resetado', [
-            'account_id' => $accountId,
-            'admin_id' => $_SESSION['user_id']
-        ]);
-
-        echo json_encode(['success' => true, 'message' => 'Limite resetado com sucesso!']);
         exit;
     }
 
