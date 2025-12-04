@@ -375,7 +375,7 @@ class AdminController {
     }
 
     public function acquirers() {
-        $acquirers = $this->acquirerModel->all('priority_order ASC');
+        $acquirers = $this->acquirerModel->getAllWithAccountCount();
         require __DIR__ . '/../../views/admin/acquirers.php';
     }
 

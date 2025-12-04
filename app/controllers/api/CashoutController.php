@@ -85,14 +85,6 @@ class CashoutController {
 
         $updatedSeller = $this->sellerModel->findById($seller['id']);
 
-        $acquirer = $this->acquirerService->selectAcquirer($amount);
-
-        if (!$acquirer) {
-            $this->sellerModel->updateBalance($seller['id'], $totalAmount);
-
-            errorResponse('No acquirer available at the moment', 503);
-        }
-
         $transactionId = generateTransactionId('CASHOUT');
 
         $acquirerData = [
@@ -104,12 +96,12 @@ class CashoutController {
             'beneficiary_document' => $beneficiaryDocument
         ];
 
-        $acquirerResponse = $this->acquirerService->createPixCashout($acquirer, $acquirerData);
+        $acquirerResponse = $this->acquirerService->createPixCashoutWithFallback($seller['id'], $acquirerData);
 
         if (!$acquirerResponse['success']) {
             $this->sellerModel->updateBalance($seller['id'], $totalAmount);
 
-            $this->logModel->error('api', 'PIX cashout failed', [
+            $this->logModel->error('api', 'PIX cashout failed with all accounts', [
                 'seller_id' => $seller['id'],
                 'transaction_id' => $transactionId,
                 'amount' => $amount,
@@ -121,9 +113,11 @@ class CashoutController {
             ]);
         }
 
+        $accountId = $acquirerResponse['account_id'];
+
         $cashoutData = [
             'seller_id' => $seller['id'],
-            'acquirer_id' => $acquirer['id'],
+            'acquirer_account_id' => $accountId,
             'transaction_id' => $transactionId,
             'external_id' => $input['external_id'] ?? null,
             'amount' => $amount,

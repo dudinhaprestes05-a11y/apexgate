@@ -226,6 +226,46 @@ try {
         $controller = new AdminController();
         $controller->deleteAcquirer($matches[1]);
     }
+    elseif (preg_match('#^/admin/acquirers/(\d+)/accounts$#', $uri, $matches)) {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->getAcquirerAccounts($matches[1]);
+    }
+    elseif (preg_match('#^/admin/acquirers/(\d+)/accounts/create$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->createAcquirerAccount($matches[1]);
+    }
+    elseif (preg_match('#^/admin/accounts/(\d+)/update$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->updateAcquirerAccount($matches[1]);
+    }
+    elseif (preg_match('#^/admin/accounts/(\d+)/delete$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->deleteAcquirerAccount($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/accounts$#', $uri, $matches)) {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->getSellerAcquirerAccounts($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/accounts/assign$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->assignAccountToSeller($matches[1]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/accounts/(\d+)/remove$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->removeAccountFromSeller($matches[1], $matches[2]);
+    }
+    elseif (preg_match('#^/admin/sellers/(\d+)/accounts/(\d+)/toggle$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->toggleSellerAccountStatus($matches[1], $matches[2]);
+    }
     elseif ($uri === '/admin/reports') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();

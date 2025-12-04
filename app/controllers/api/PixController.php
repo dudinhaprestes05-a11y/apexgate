@@ -89,12 +89,6 @@ class PixController {
             }
         }
 
-        $acquirer = $this->acquirerService->selectAcquirer($amount);
-
-        if (!$acquirer) {
-            errorResponse('No acquirer available at the moment', 503);
-        }
-
         $settings = $this->systemSettings->getSettings();
         $feePercentage = $seller['fee_percentage_cashin'] ?? $settings['default_fee_percentage_cashin'] ?? 0;
         $feeFixed = $seller['fee_fixed_cashin'] ?? $settings['default_fee_fixed_cashin'] ?? 0;
@@ -122,13 +116,12 @@ class PixController {
             'customer' => $customerData
         ];
 
-        $acquirerResponse = $this->acquirerService->createPixCashin($acquirer, $acquirerData);
+        $acquirerResponse = $this->acquirerService->createPixCashinWithFallback($seller['id'], $acquirerData);
 
         if (!$acquirerResponse['success']) {
-            $this->logModel->error('api', 'Acquirer failed to create PIX', [
+            $this->logModel->error('api', 'Failed to create PIX with all accounts', [
                 'seller_id' => $seller['id'],
                 'transaction_id' => $transactionId,
-                'acquirer_id' => $acquirer['id'],
                 'error' => $acquirerResponse['error']
             ]);
 
@@ -137,12 +130,14 @@ class PixController {
             ]);
         }
 
+        $accountId = $acquirerResponse['account_id'];
+
         try {
             Database::getInstance()->beginTransaction();
 
             $cashinData = [
                 'seller_id' => $seller['id'],
-                'acquirer_id' => $acquirer['id'],
+                'acquirer_account_id' => $accountId,
                 'transaction_id' => $transactionId,
                 'external_id' => $input['external_id'] ?? null,
                 'amount' => $amount,
@@ -167,7 +162,6 @@ class PixController {
             }
 
             $this->sellerModel->incrementDailyUsed($seller['id'], $amount);
-            $this->acquirerModel->incrementDailyUsed($acquirer['id'], $amount);
 
             Database::getInstance()->commit();
 
