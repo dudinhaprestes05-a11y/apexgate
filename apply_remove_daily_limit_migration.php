@@ -6,6 +6,7 @@
  * sellers e acquirers, pois não são mais necessários.
  */
 
+require_once __DIR__ . '/app/config/config.php';
 require_once __DIR__ . '/app/config/database.php';
 
 try {
