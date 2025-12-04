@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../services/WebhookService.php';
 require_once __DIR__ . '/../../models/PixCashout.php';
 require_once __DIR__ . '/../../models/Seller.php';
 require_once __DIR__ . '/../../models/Log.php';
+require_once __DIR__ . '/../../models/SystemSettings.php';
 
 class CashoutController {
     private $authService;
@@ -16,6 +17,7 @@ class CashoutController {
     private $pixCashoutModel;
     private $sellerModel;
     private $logModel;
+    private $systemSettings;
 
     public function __construct() {
         $this->authService = new AuthService();
@@ -25,6 +27,7 @@ class CashoutController {
         $this->pixCashoutModel = new PixCashout();
         $this->sellerModel = new Seller();
         $this->logModel = new Log();
+        $this->systemSettings = new SystemSettings();
     }
 
     public function create() {
@@ -72,7 +75,11 @@ class CashoutController {
             errorResponse('No acquirer available at the moment', 503);
         }
 
-        $feeAmount = calculateFee($amount, $seller['fee_percentage_cashout'] ?? 0.0199, $seller['fee_fixed_cashout'] ?? 0);
+        $settings = $this->systemSettings->getSettings();
+        $feePercentage = $seller['fee_percentage_cashout'] ?? $settings['default_fee_percentage_cashout'] ?? 0;
+        $feeFixed = $seller['fee_fixed_cashout'] ?? $settings['default_fee_fixed_cashout'] ?? 0;
+
+        $feeAmount = calculateFee($amount, $feePercentage, $feeFixed);
         $netAmount = $amount - $feeAmount;
 
         $transactionId = generateTransactionId('CASHOUT');

@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../models/PixCashin.php';
 require_once __DIR__ . '/../../models/Seller.php';
 require_once __DIR__ . '/../../models/Acquirer.php';
 require_once __DIR__ . '/../../models/Log.php';
+require_once __DIR__ . '/../../models/SystemSettings.php';
 
 class PixController {
     private $authService;
@@ -20,6 +21,7 @@ class PixController {
     private $sellerModel;
     private $acquirerModel;
     private $logModel;
+    private $systemSettings;
 
     public function __construct() {
         $this->authService = new AuthService();
@@ -31,6 +33,7 @@ class PixController {
         $this->sellerModel = new Seller();
         $this->acquirerModel = new Acquirer();
         $this->logModel = new Log();
+        $this->systemSettings = new SystemSettings();
     }
 
     public function create() {
@@ -92,7 +95,11 @@ class PixController {
             errorResponse('No acquirer available at the moment', 503);
         }
 
-        $feeAmount = calculateFee($amount, $seller['fee_percentage_cashin'] ?? 0.0099, $seller['fee_fixed_cashin'] ?? 0);
+        $settings = $this->systemSettings->getSettings();
+        $feePercentage = $seller['fee_percentage_cashin'] ?? $settings['default_fee_percentage_cashin'] ?? 0;
+        $feeFixed = $seller['fee_fixed_cashin'] ?? $settings['default_fee_fixed_cashin'] ?? 0;
+
+        $feeAmount = calculateFee($amount, $feePercentage, $feeFixed);
         $netAmount = calculateNetAmount($amount, $feeAmount);
 
         $transactionId = generateTransactionId('CASHIN');
