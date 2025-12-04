@@ -164,4 +164,27 @@ class AcquirerAccount extends BaseModel {
             [$isActive, $sellerId, $accountId]
         );
     }
+
+    public function getAccountsByAcquirer($acquirerId) {
+        $sql = "
+            SELECT aa.*,
+                COUNT(DISTINCT pc.id) as total_transactions,
+                COALESCE(AVG(CASE WHEN pc.status = 'approved' THEN 1 ELSE 0 END) * 100, 0) as success_rate,
+                COALESCE(SUM(pc.amount), 0) as total_volume
+            FROM acquirer_accounts aa
+            LEFT JOIN pix_cashin pc ON pc.acquirer_account_id = aa.id
+            WHERE aa.acquirer_id = ?
+            GROUP BY aa.id
+            ORDER BY aa.priority ASC, aa.created_at ASC
+        ";
+
+        return $this->query($sql, [$acquirerId]);
+    }
+
+    public function unsetDefaultForAcquirer($acquirerId) {
+        return $this->execute(
+            "UPDATE acquirer_accounts SET is_default = false, updated_at = NOW() WHERE acquirer_id = ?",
+            [$acquirerId]
+        );
+    }
 }

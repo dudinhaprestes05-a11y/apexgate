@@ -271,6 +271,69 @@ $statusColors = [
             </form>
         </div>
 
+        <!-- Processing Accounts -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-between">
+                <span>
+                    <i class="fas fa-wallet text-green-500 mr-2"></i>
+                    Contas de Processamento
+                </span>
+                <span class="text-sm text-slate-400">
+                    <?= isset($accounts) ? count($accounts) : 0 ?> conta(s)
+                </span>
+            </h3>
+
+            <?php if (empty($accounts)): ?>
+                <div class="text-center py-12 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                    <i class="fas fa-wallet text-5xl text-slate-600 mb-3"></i>
+                    <p class="text-slate-400 mb-4">Nenhuma conta de processamento atribuída</p>
+                    <p class="text-slate-500 text-sm">As transações deste seller usarão as contas padrão do sistema</p>
+                </div>
+            <?php else: ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <?php foreach ($accounts as $account): ?>
+                    <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <h4 class="font-semibold text-white"><?= htmlspecialchars($account['account_name']) ?></h4>
+                                <p class="text-sm text-slate-400 mt-1">Processador de Pagamento</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full <?= $account['is_active'] && $account['account_active'] ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' ?>">
+                                <?= $account['is_active'] && $account['account_active'] ? 'Ativa' : 'Inativa' ?>
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <p class="text-xs text-slate-500">Prioridade</p>
+                                <p class="text-sm font-medium text-white"><?= $account['priority'] ?></p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Estratégia</p>
+                                <p class="text-sm font-medium text-white capitalize"><?= htmlspecialchars($account['distribution_strategy']) ?></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 py-2 border-t border-slate-700">
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500">Transações</p>
+                                <p class="text-sm font-bold text-white"><?= $account['total_transactions'] ?? 0 ?></p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500">Volume</p>
+                                <p class="text-sm font-bold text-green-400">R$ <?= number_format($account['total_volume'] ?? 0, 2, ',', '.') ?></p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500">% Alocação</p>
+                                <p class="text-sm font-bold text-blue-400"><?= $account['percentage_allocation'] ?? 0 ?>%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <!-- Recent Transactions -->
         <div class="card p-6">
             <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-between">

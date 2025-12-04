@@ -229,22 +229,32 @@ try {
     elseif (preg_match('#^/admin/acquirers/(\d+)/accounts$#', $uri, $matches)) {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
-        $controller->getAcquirerAccounts($matches[1]);
+        $controller->acquirerAccounts($matches[1]);
     }
-    elseif (preg_match('#^/admin/acquirers/(\d+)/accounts/create$#', $uri, $matches) && $method === 'POST') {
+    elseif (preg_match('#^/admin/acquirers/accounts/get/(\d+)$#', $uri, $matches)) {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
-        $controller->createAcquirerAccount($matches[1]);
+        $controller->getAcquirerAccount($matches[1]);
     }
-    elseif (preg_match('#^/admin/accounts/(\d+)/update$#', $uri, $matches) && $method === 'POST') {
+    elseif ($uri === '/admin/acquirers/accounts/create' && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->createAcquirerAccount();
+    }
+    elseif (preg_match('#^/admin/acquirers/accounts/update/(\d+)$#', $uri, $matches) && $method === 'POST') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
         $controller->updateAcquirerAccount($matches[1]);
     }
-    elseif (preg_match('#^/admin/accounts/(\d+)/delete$#', $uri, $matches) && $method === 'POST') {
+    elseif (preg_match('#^/admin/acquirers/accounts/toggle/(\d+)$#', $uri, $matches) && $method === 'POST') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();
-        $controller->deleteAcquirerAccount($matches[1]);
+        $controller->toggleAcquirerAccount($matches[1]);
+    }
+    elseif (preg_match('#^/admin/acquirers/accounts/reset-limit/(\d+)$#', $uri, $matches) && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/AdminController.php';
+        $controller = new AdminController();
+        $controller->resetAcquirerAccountLimit($matches[1]);
     }
     elseif (preg_match('#^/admin/sellers/(\d+)/accounts$#', $uri, $matches)) {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';

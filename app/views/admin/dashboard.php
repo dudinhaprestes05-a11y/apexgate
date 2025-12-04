@@ -199,6 +199,74 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 
+    <!-- Account Usage Statistics -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-white flex items-center">
+                <i class="fas fa-wallet text-green-500 mr-2"></i>
+                Estatísticas por Conta de Processamento
+            </h2>
+            <a href="/admin/acquirers" class="text-blue-400 hover:text-blue-300 text-sm">
+                Ver todas <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+
+        <?php if (isset($accountStats) && !empty($accountStats)): ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <?php foreach ($accountStats as $account): ?>
+                <div class="p-4 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700 hover:border-green-500 transition">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-white mb-1"><?= htmlspecialchars($account['account_name']) ?></h4>
+                            <p class="text-xs text-slate-400">Processador de Pagamento</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full <?= $account['is_active'] ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' ?>">
+                            <?= $account['is_active'] ? 'Ativa' : 'Inativa' ?>
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="w-full bg-slate-700 rounded-full h-2 mb-2">
+                            <?php
+                            $percentage = $account['daily_limit'] > 0 ? ($account['daily_used'] / $account['daily_limit']) * 100 : 0;
+                            $barColor = $percentage >= 90 ? 'bg-red-500' : ($percentage >= 70 ? 'bg-yellow-500' : 'bg-green-500');
+                            ?>
+                            <div class="<?= $barColor ?> h-2 rounded-full transition-all" style="width: <?= min($percentage, 100) ?>%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">R$ <?= number_format($account['daily_used'], 2, ',', '.') ?></span>
+                            <span class="text-slate-500">R$ <?= number_format($account['daily_limit'], 2, ',', '.') ?></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 pt-3 border-t border-slate-700">
+                        <div class="text-center">
+                            <p class="text-xs text-slate-500 mb-1">Transações</p>
+                            <p class="text-lg font-bold text-white"><?= $account['transaction_count'] ?? 0 ?></p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-slate-500 mb-1">Volume</p>
+                            <p class="text-lg font-bold text-green-400">R$ <?= number_format($account['total_volume'] ?? 0, 0, ',', '.') ?></p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-slate-500 mb-1">Taxa</p>
+                            <p class="text-lg font-bold text-blue-400"><?= number_format($account['success_rate'] ?? 0, 1) ?>%</p>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="text-center py-12 bg-slate-800 bg-opacity-50 rounded-lg border border-slate-700">
+                <i class="fas fa-wallet text-5xl text-slate-600 mb-3"></i>
+                <p class="text-slate-400 mb-2">Nenhuma conta de processamento configurada</p>
+                <a href="/admin/acquirers" class="text-blue-400 hover:text-blue-300 text-sm">
+                    Configurar contas <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <!-- Transações Recentes -->
     <div class="card p-6">
         <div class="flex items-center justify-between mb-6">

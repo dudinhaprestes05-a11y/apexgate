@@ -59,10 +59,17 @@ require_once __DIR__ . '/../layouts/header.php';
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Código</label>
                             <p class="text-gray-900 mt-1 font-mono text-sm"><?= htmlspecialchars($acquirer['code']) ?></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-600">Contas</label>
+                            <p class="text-gray-900 mt-1 font-semibold">
+                                <span class="text-green-600"><?= $acquirer['active_account_count'] ?></span> / <?= $acquirer['account_count'] ?>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-0.5">Ativas / Total</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-600">Prioridade</label>
@@ -98,6 +105,10 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
 
             <div class="flex items-center gap-2 pt-4 border-t border-gray-200">
+                <button onclick="manageAccounts(<?= $acquirer['id'] ?>, '<?= htmlspecialchars($acquirer['name']) ?>')" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                    <i class="fas fa-wallet"></i>
+                    Contas (<?= $acquirer['account_count'] ?>)
+                </button>
                 <button onclick="editAcquirer(<?= $acquirer['id'] ?>)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
                     <i class="fas fa-edit"></i>
                     Editar
@@ -336,6 +347,10 @@ function filterByStatus(status) {
             card.style.display = 'none';
         }
     });
+}
+
+function manageAccounts(acquirerId, acquirerName) {
+    window.location.href = `/admin/acquirers/${acquirerId}/accounts`;
 }
 </script>
 

@@ -81,6 +81,7 @@ class AdminController {
         $recentSellers = $this->sellerModel->where(['status' => 'pending'], 'created_at DESC', 5);
         $recentCashin = $this->cashinModel->all('created_at DESC', 10);
         $recentLogs = $this->logModel->where(['level' => 'error'], 'created_at DESC', 10);
+        $accountStats = $this->getAccountStatistics();
 
         require __DIR__ . '/../../views/admin/dashboard.php';
     }
@@ -120,6 +121,7 @@ class AdminController {
             $this->cashinModel->getRecentBySeller($sellerId, 5),
             $this->cashoutModel->getRecentBySeller($sellerId, 5)
         );
+        $accounts = $this->accountModel->getAccountsBySellerWithStats($sellerId);
 
         $requiredDocs = ['rg', 'cpf', 'selfie'];
         $missingDocs = [];
@@ -1245,6 +1247,203 @@ class AdminController {
 
         echo json_encode(['success' => true, 'message' => 'Status atualizado com sucesso!']);
         exit;
+    }
+
+    public function acquirerAccounts($acquirerId) {
+        $acquirer = $this->acquirerModel->find($acquirerId);
+
+        if (!$acquirer) {
+            $_SESSION['error'] = 'Adquirente não encontrada';
+            header('Location: /admin/acquirers');
+            exit;
+        }
+
+        $accounts = $this->accountModel->getAccountsByAcquirer($acquirerId);
+
+        require __DIR__ . '/../../views/admin/acquirer-accounts.php';
+    }
+
+    public function getAcquirerAccount($accountId) {
+        header('Content-Type: application/json');
+
+        $account = $this->accountModel->find($accountId);
+
+        if (!$account) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'error' => 'Conta não encontrada']);
+            exit;
+        }
+
+        echo json_encode(['success' => true, 'account' => $account]);
+        exit;
+    }
+
+    public function createAcquirerAccount() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        try {
+            $data = [
+                'acquirer_id' => $_POST['acquirer_id'],
+                'name' => $_POST['name'],
+                'api_key' => $_POST['api_key'],
+                'api_secret' => $_POST['api_secret'] ?? null,
+                'load_balance_strategy' => $_POST['load_balance_strategy'],
+                'weight' => (int)$_POST['weight'],
+                'priority' => (int)$_POST['priority'],
+                'max_retries' => (int)$_POST['max_retries'],
+                'daily_limit' => $this->parseDecimal($_POST['daily_limit']),
+                'is_active' => isset($_POST['is_active']) && $_POST['is_active'] === 'on',
+                'is_default' => isset($_POST['is_default']) && $_POST['is_default'] === 'on'
+            ];
+
+            if ($data['is_default']) {
+                $this->accountModel->unsetDefaultForAcquirer($data['acquirer_id']);
+            }
+
+            $accountId = $this->accountModel->create($data);
+
+            $this->logModel->info('admin', 'Nova conta de adquirente criada', [
+                'account_id' => $accountId,
+                'acquirer_id' => $data['acquirer_id'],
+                'name' => $data['name'],
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Conta criada com sucesso!', 'account_id' => $accountId]);
+        } catch (Exception $e) {
+            error_log("Error creating acquirer account: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Erro ao criar conta: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    public function updateAcquirerAccount($accountId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        try {
+            $account = $this->accountModel->find($accountId);
+
+            if (!$account) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => 'Conta não encontrada']);
+                exit;
+            }
+
+            $data = [
+                'name' => $_POST['name'],
+                'api_key' => $_POST['api_key'],
+                'load_balance_strategy' => $_POST['load_balance_strategy'],
+                'weight' => (int)$_POST['weight'],
+                'priority' => (int)$_POST['priority'],
+                'max_retries' => (int)$_POST['max_retries'],
+                'daily_limit' => $this->parseDecimal($_POST['daily_limit']),
+                'is_active' => isset($_POST['is_active']) && $_POST['is_active'] === 'on',
+                'is_default' => isset($_POST['is_default']) && $_POST['is_default'] === 'on'
+            ];
+
+            if (!empty($_POST['api_secret'])) {
+                $data['api_secret'] = $_POST['api_secret'];
+            }
+
+            if ($data['is_default']) {
+                $this->accountModel->unsetDefaultForAcquirer($account['acquirer_id']);
+            }
+
+            $this->accountModel->update($accountId, $data);
+
+            $this->logModel->info('admin', 'Conta de adquirente atualizada', [
+                'account_id' => $accountId,
+                'name' => $data['name'],
+                'admin_id' => $_SESSION['user_id']
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'Conta atualizada com sucesso!']);
+        } catch (Exception $e) {
+            error_log("Error updating acquirer account: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Erro ao atualizar conta: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
+    public function toggleAcquirerAccount($accountId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $isActive = $input['is_active'] ?? true;
+
+        $this->accountModel->update($accountId, ['is_active' => $isActive]);
+
+        $this->logModel->info('admin', 'Status da conta alterado', [
+            'account_id' => $accountId,
+            'is_active' => $isActive,
+            'admin_id' => $_SESSION['user_id']
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Status atualizado com sucesso!']);
+        exit;
+    }
+
+    public function resetAcquirerAccountLimit($accountId) {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método não permitido']);
+            exit;
+        }
+
+        $this->accountModel->update($accountId, ['daily_used' => 0]);
+
+        $this->logModel->info('admin', 'Limite diário da conta resetado', [
+            'account_id' => $accountId,
+            'admin_id' => $_SESSION['user_id']
+        ]);
+
+        echo json_encode(['success' => true, 'message' => 'Limite resetado com sucesso!']);
+        exit;
+    }
+
+    private function getAccountStatistics() {
+        $sql = "
+            SELECT
+                aa.id,
+                aa.name as account_name,
+                aa.is_active,
+                aa.daily_limit,
+                aa.daily_used,
+                COUNT(DISTINCT pc.id) as transaction_count,
+                COALESCE(SUM(pc.amount), 0) as total_volume,
+                COALESCE(AVG(CASE WHEN pc.status IN ('approved', 'paid') THEN 100 ELSE 0 END), 0) as success_rate
+            FROM acquirer_accounts aa
+            LEFT JOIN pix_cashin pc ON pc.acquirer_account_id = aa.id
+                AND pc.created_at >= CURRENT_DATE
+            WHERE aa.is_active = true
+            GROUP BY aa.id, aa.name, aa.is_active, aa.daily_limit, aa.daily_used
+            ORDER BY total_volume DESC
+            LIMIT 6
+        ";
+
+        return $this->accountModel->query($sql);
     }
 
 }
