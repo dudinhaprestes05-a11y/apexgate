@@ -52,11 +52,20 @@ require_once __DIR__ . '/../layouts/header.php';
                         <?php endif; ?>
                         <?php if (isset($transaction['net_amount'])): ?>
                         <div>
-                            <label class="text-sm font-medium text-gray-600">Valor Líquido</label>
+                            <label class="text-sm font-medium text-gray-600">
+                                <?= $type === 'cashout' ? 'Valor Recebido' : 'Valor Líquido' ?>
+                            </label>
                             <p class="text-gray-900 mt-1 font-semibold">R$ <?= number_format($transaction['net_amount'], 2, ',', '.') ?></p>
                         </div>
                         <?php endif; ?>
                     </div>
+                    <?php if ($type === 'cashout' && isset($transaction['amount']) && isset($transaction['fee_amount'])): ?>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Valor Total Debitado</label>
+                        <p class="text-gray-900 mt-1 font-bold text-lg">R$ <?= number_format($transaction['amount'] + $transaction['fee_amount'], 2, ',', '.') ?></p>
+                        <p class="text-xs text-gray-500 mt-1">Valor do saque + taxa</p>
+                    </div>
+                    <?php endif; ?>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="text-sm font-medium text-gray-600">Criado em</label>
