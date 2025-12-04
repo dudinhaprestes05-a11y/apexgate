@@ -9,6 +9,10 @@ class Seller extends BaseModel {
         return $this->findBy('api_key', $apiKey);
     }
 
+    public function findByDocument($document) {
+        return $this->findBy('document', $document);
+    }
+
     public function updateBalance($sellerId, $amount) {
         $sql = "UPDATE sellers SET balance = balance + ?, updated_at = NOW() WHERE id = ?";
         return $this->execute($sql, [$amount, $sellerId]);
