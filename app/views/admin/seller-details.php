@@ -896,19 +896,36 @@ function rejectDocument() {
 }
 
 function openAddAccountModal() {
+    console.log('Abrindo modal de adicionar conta...');
+
     fetch('/admin/accounts/available')
-        .then(response => response.json())
+        .then(response => {
+            console.log('Resposta recebida:', response.status);
+            if (!response.ok) {
+                throw new Error('Erro na resposta: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Dados recebidos:', data);
             if (data.success) {
                 showAccountSelectionModal(data.accounts);
+            } else {
+                alert('Erro: ' + (data.error || 'Resposta inválida'));
             }
         })
         .catch(error => {
-            alert('Erro ao carregar contas disponíveis');
+            console.error('Erro ao carregar contas:', error);
+            alert('Erro ao carregar contas disponíveis: ' + error.message);
         });
 }
 
 function showAccountSelectionModal(accounts) {
+    if (!accounts || accounts.length === 0) {
+        alert('Não há contas disponíveis. Crie uma conta de adquirente primeiro.');
+        return;
+    }
+
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
     modal.innerHTML = `
@@ -922,7 +939,7 @@ function showAccountSelectionModal(accounts) {
             <div class="space-y-4 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Selecione uma conta</label>
-                    <select id="accountSelect" class="w-full px-4 py-2.5 rounded-lg">
+                    <select id="accountSelect" class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white">
                         <option value="">Selecione...</option>
                         ${accounts.map(acc => `
                             <option value="${acc.id}">
@@ -933,7 +950,7 @@ function showAccountSelectionModal(accounts) {
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">Prioridade</label>
-                    <input type="number" id="accountPriority" value="1" min="1" class="w-full px-4 py-2.5 rounded-lg">
+                    <input type="number" id="accountPriority" value="1" min="1" class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white">
                     <p class="text-xs text-slate-500 mt-1">Menor número = maior prioridade</p>
                 </div>
             </div>
@@ -970,7 +987,12 @@ function addAccount() {
             priority: parseInt(priority)
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro na resposta: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             location.reload();
@@ -979,7 +1001,8 @@ function addAccount() {
         }
     })
     .catch(error => {
-        alert('Erro ao adicionar conta');
+        console.error('Erro:', error);
+        alert('Erro ao adicionar conta: ' + error.message);
     });
 }
 
