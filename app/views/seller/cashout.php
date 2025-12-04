@@ -143,14 +143,47 @@ require_once __DIR__ . '/../layouts/header.php';
                         <p class="text-xs text-slate-400 mt-1" id="pixKeyHint">Selecione o tipo de chave acima</p>
                     </div>
 
+                    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4">
+                        <label class="block text-sm font-medium text-slate-300 mb-3">Destinatário do PIX</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative cursor-pointer">
+                                <input type="radio"
+                                       name="beneficiary_type"
+                                       id="beneficiaryTypeSelf"
+                                       value="self"
+                                       class="peer sr-only"
+                                       checked
+                                       <?= ($seller['status'] !== 'active' || !$seller['cashout_enabled']) ? 'disabled' : '' ?>>
+                                <div class="w-full px-4 py-3 bg-slate-800 border-2 border-slate-700 rounded-lg text-center transition peer-checked:border-blue-500 peer-checked:bg-blue-900 peer-checked:bg-opacity-20">
+                                    <i class="fas fa-user text-lg mb-1"></i>
+                                    <p class="text-sm font-medium text-white">Para mim</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio"
+                                       name="beneficiary_type"
+                                       id="beneficiaryTypeThird"
+                                       value="third"
+                                       class="peer sr-only"
+                                       <?= ($seller['status'] !== 'active' || !$seller['cashout_enabled']) ? 'disabled' : '' ?>>
+                                <div class="w-full px-4 py-3 bg-slate-800 border-2 border-slate-700 rounded-lg text-center transition peer-checked:border-blue-500 peer-checked:bg-blue-900 peer-checked:bg-opacity-20">
+                                    <i class="fas fa-user-friends text-lg mb-1"></i>
+                                    <p class="text-sm font-medium text-white">Para terceiro</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Nome do Beneficiário</label>
                         <input type="text"
                                name="beneficiary_name"
+                               id="beneficiaryName"
                                class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                                placeholder="Nome completo"
                                value="<?= htmlspecialchars($seller['name']) ?>"
                                required
+                               readonly
                                <?= ($seller['status'] !== 'active' || !$seller['cashout_enabled']) ? 'disabled' : '' ?>>
                     </div>
 
@@ -163,6 +196,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                placeholder="000.000.000-00"
                                value="<?= htmlspecialchars($seller['document']) ?>"
                                required
+                               readonly
                                <?= ($seller['status'] !== 'active' || !$seller['cashout_enabled']) ? 'disabled' : '' ?>>
                     </div>
 
@@ -254,9 +288,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const pixKeyType = document.getElementById('pixKeyType');
     const pixKey = document.getElementById('pixKey');
     const pixKeyHint = document.getElementById('pixKeyHint');
+    const beneficiaryTypeSelf = document.getElementById('beneficiaryTypeSelf');
+    const beneficiaryTypeThird = document.getElementById('beneficiaryTypeThird');
+    const beneficiaryName = document.getElementById('beneficiaryName');
+    const beneficiaryDocument = document.getElementById('beneficiaryDocument');
 
     const feePercentage = <?= $feePercentage ?>;
     const feeFixed = <?= $feeFixed ?>;
+
+    const sellerName = '<?= addslashes($seller['name']) ?>';
+    const sellerDocument = '<?= addslashes($seller['document']) ?>';
 
     function formatCurrency(value) {
         return 'R$ ' + value.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -280,6 +321,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     amountInput.addEventListener('input', calculateFee);
+
+    function toggleBeneficiaryFields() {
+        if (beneficiaryTypeSelf.checked) {
+            beneficiaryName.value = sellerName;
+            beneficiaryDocument.value = sellerDocument;
+            beneficiaryName.setAttribute('readonly', 'readonly');
+            beneficiaryDocument.setAttribute('readonly', 'readonly');
+            beneficiaryName.classList.add('bg-slate-800', 'cursor-not-allowed');
+            beneficiaryDocument.classList.add('bg-slate-800', 'cursor-not-allowed');
+        } else {
+            beneficiaryName.value = '';
+            beneficiaryDocument.value = '';
+            beneficiaryName.removeAttribute('readonly');
+            beneficiaryDocument.removeAttribute('readonly');
+            beneficiaryName.classList.remove('bg-slate-800', 'cursor-not-allowed');
+            beneficiaryDocument.classList.remove('bg-slate-800', 'cursor-not-allowed');
+        }
+    }
+
+    beneficiaryTypeSelf.addEventListener('change', toggleBeneficiaryFields);
+    beneficiaryTypeThird.addEventListener('change', toggleBeneficiaryFields);
+
+    toggleBeneficiaryFields();
 
     pixKeyType.addEventListener('change', function() {
         const type = this.value;
