@@ -313,21 +313,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const form = document.getElementById('cashoutForm');
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
         const amount = parseFloat(amountInput.value) || 0;
         const balance = <?= $seller['balance'] ?>;
         const fee = (amount * feePercentage) + feeFixed;
         const total = amount + fee;
 
         if (total > balance) {
-            e.preventDefault();
-            alert('Saldo insuficiente! Necessário: ' + formatCurrency(total) + ', Disponível: ' + formatCurrency(balance));
+            await customAlert(
+                'Necessário: ' + formatCurrency(total) + '\nDisponível: ' + formatCurrency(balance),
+                'Saldo Insuficiente',
+                'error'
+            );
             return false;
         }
 
-        if (!confirm('Confirma o saque de ' + formatCurrency(amount) + ' com taxa de ' + formatCurrency(fee) + '?\n\nTotal a ser debitado: ' + formatCurrency(total))) {
-            e.preventDefault();
-            return false;
+        const confirmed = await customConfirm(
+            'Confirma o saque de ' + formatCurrency(amount) + ' com taxa de ' + formatCurrency(fee) + '?\n\nTotal a ser debitado: ' + formatCurrency(total),
+            'Confirmar Saque'
+        );
+
+        if (confirmed) {
+            form.submit();
         }
     });
 });

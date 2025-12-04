@@ -157,12 +157,12 @@ unset($_SESSION['old_data']);
             if (personType) togglePersonType(personType);
 
             const registerForm = document.querySelector('form');
-            registerForm.addEventListener('submit', function(e) {
+            registerForm.addEventListener('submit', async function(e) {
                 const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
 
                 if (!turnstileResponse || !turnstileResponse.value) {
                     e.preventDefault();
-                    alert('Por favor, complete a verificação de segurança.');
+                    await customAlert('Por favor, complete a verificação de segurança.', 'Atenção', 'info');
                     return false;
                 }
             });

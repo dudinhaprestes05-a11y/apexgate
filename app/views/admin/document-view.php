@@ -153,8 +153,9 @@ function hideRejectModal() {
     document.getElementById('rejectModal').classList.add('hidden');
 }
 
-function approveDocument(docId) {
-    if (!confirm('Tem certeza que deseja aprovar este documento?')) {
+async function approveDocument(docId) {
+    const confirmed = await customConfirm('Tem certeza que deseja aprovar este documento?', 'Confirmar Aprovação');
+    if (!confirmed) {
         return;
     }
 

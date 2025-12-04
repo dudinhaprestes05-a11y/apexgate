@@ -289,10 +289,10 @@ function editAccount(id) {
                 document.getElementById('accountModal').classList.remove('hidden');
             }
         })
-        .catch(err => alert('Erro ao carregar dados da conta'));
+        .catch(err => customAlert('Erro ao carregar dados da conta', 'Erro', 'error'));
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const id = formData.get('id');
@@ -303,21 +303,22 @@ function handleSubmit(event) {
         body: formData
     })
     .then(res => res.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
-            alert(data.message);
+            await customAlert(data.message, 'Sucesso', 'success');
             closeModal();
             location.reload();
         } else {
-            alert(data.error || 'Erro ao salvar conta');
+            await customAlert(data.error || 'Erro ao salvar conta', 'Erro', 'error');
         }
     })
-    .catch(err => alert('Erro na requisição'));
+    .catch(err => customAlert('Erro na requisição', 'Erro', 'error'));
 }
 
-function toggleAccount(id, activate) {
+async function toggleAccount(id, activate) {
     const action = activate ? 'ativar' : 'desativar';
-    if (!confirm(`Deseja ${action} esta conta?`)) return;
+    const confirmed = await customConfirm(`Deseja ${action} esta conta?`, 'Confirmar Ação');
+    if (!confirmed) return;
 
     fetch(`/admin/acquirers/accounts/toggle/${id}`, {
         method: 'POST',
@@ -325,30 +326,31 @@ function toggleAccount(id, activate) {
         body: JSON.stringify({is_active: activate})
     })
     .then(res => res.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
             location.reload();
         } else {
-            alert(data.error || 'Erro ao alterar status');
+            await customAlert(data.error || 'Erro ao alterar status', 'Erro', 'error');
         }
     })
-    .catch(err => alert('Erro na requisição'));
+    .catch(err => customAlert('Erro na requisição', 'Erro', 'error'));
 }
 
-function resetDailyLimit(id) {
-    if (!confirm('Deseja resetar o limite diário desta conta?')) return;
+async function resetDailyLimit(id) {
+    const confirmed = await customConfirm('Deseja resetar o limite diário desta conta?', 'Confirmar Reset');
+    if (!confirmed) return;
 
     fetch(`/admin/acquirers/accounts/reset-limit/${id}`, {method: 'POST'})
         .then(res => res.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
-                alert('Limite diário resetado com sucesso!');
+                await customAlert('Limite diário resetado com sucesso!', 'Sucesso', 'success');
                 location.reload();
             } else {
-                alert(data.error || 'Erro ao resetar limite');
+                await customAlert(data.error || 'Erro ao resetar limite', 'Erro', 'error');
             }
         })
-        .catch(err => alert('Erro na requisição'));
+        .catch(err => customAlert('Erro na requisição', 'Erro', 'error'));
 }
 
 function viewAccountDetails(id) {

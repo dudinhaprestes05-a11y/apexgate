@@ -185,7 +185,8 @@ async function addIp() {
 }
 
 async function removeIp(ip) {
-    if (!confirm('Tem certeza que deseja remover este IP?')) {
+    const confirmed = await customConfirm('Tem certeza que deseja remover este IP?', 'Confirmar Remoção');
+    if (!confirmed) {
         return;
     }
 

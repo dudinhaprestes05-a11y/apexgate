@@ -85,12 +85,12 @@
         const loginForm = document.querySelector('form');
         const loginBtn = document.getElementById('loginBtn');
 
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
 
             if (!turnstileResponse || !turnstileResponse.value) {
                 e.preventDefault();
-                alert('Por favor, complete a verificação de segurança.');
+                await customAlert('Por favor, complete a verificação de segurança.', 'Atenção', 'info');
                 return false;
             }
         });

@@ -836,18 +836,18 @@ function approveDocument() {
         }
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
-            alert('Documento aprovado com sucesso!');
+            await customAlert('Documento aprovado com sucesso!', 'Sucesso', 'success');
             location.reload();
         }
     })
-    .catch(error => {
-        alert('Erro ao aprovar documento');
+    .catch(async error => {
+        await customAlert('Erro ao aprovar documento', 'Erro', 'error');
     });
 }
 
-function rejectDocument() {
+async function rejectDocument() {
     if (!currentDocumentId) return;
 
     const reason = prompt('Motivo da rejeição:');
@@ -864,14 +864,14 @@ function rejectDocument() {
         body: formData
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
-            alert('Documento rejeitado');
+            await customAlert('Documento rejeitado', 'Sucesso', 'success');
             location.reload();
         }
     })
-    .catch(error => {
-        alert('Erro ao rejeitar documento');
+    .catch(async error => {
+        await customAlert('Erro ao rejeitar documento', 'Erro', 'error');
     });
 }
 
@@ -886,23 +886,23 @@ function openAddAccountModal() {
             }
             return response.json();
         })
-        .then(data => {
+        .then(async data => {
             console.log('Dados recebidos:', data);
             if (data.success) {
                 showAccountSelectionModal(data.accounts);
             } else {
-                alert('Erro: ' + (data.error || 'Resposta inválida'));
+                await customAlert('Erro: ' + (data.error || 'Resposta inválida'), 'Erro', 'error');
             }
         })
-        .catch(error => {
+        .catch(async error => {
             console.error('Erro ao carregar contas:', error);
-            alert('Erro ao carregar contas disponíveis: ' + error.message);
+            await customAlert('Erro ao carregar contas disponíveis: ' + error.message, 'Erro', 'error');
         });
 }
 
-function showAccountSelectionModal(accounts) {
+async function showAccountSelectionModal(accounts) {
     if (!accounts || accounts.length === 0) {
-        alert('Não há contas disponíveis. Crie uma conta de adquirente primeiro.');
+        await customAlert('Não há contas disponíveis. Crie uma conta de adquirente primeiro.', 'Aviso', 'info');
         return;
     }
 
@@ -947,12 +947,12 @@ function showAccountSelectionModal(accounts) {
     document.body.appendChild(modal);
 }
 
-function addAccount() {
+async function addAccount() {
     const accountId = document.getElementById('accountSelect').value;
     const priority = document.getElementById('accountPriority').value;
 
     if (!accountId) {
-        alert('Selecione uma conta');
+        await customAlert('Selecione uma conta', 'Atenção', 'info');
         return;
     }
 
@@ -973,21 +973,22 @@ function addAccount() {
         }
         return response.json();
     })
-    .then(data => {
+    .then(async data => {
         if (data.success) {
             location.reload();
         } else {
-            alert(data.error || 'Erro ao adicionar conta');
+            await customAlert(data.error || 'Erro ao adicionar conta', 'Erro', 'error');
         }
     })
-    .catch(error => {
+    .catch(async error => {
         console.error('Erro:', error);
-        alert('Erro ao adicionar conta: ' + error.message);
+        await customAlert('Erro ao adicionar conta: ' + error.message, 'Erro', 'error');
     });
 }
 
-function removeAccount(accountId) {
-    if (!confirm('Tem certeza que deseja remover esta conta?')) {
+async function removeAccount(accountId) {
+    const confirmed = await customConfirm('Tem certeza que deseja remover esta conta?', 'Confirmar Remoção');
+    if (!confirmed) {
         return;
     }
 
@@ -998,15 +999,15 @@ function removeAccount(accountId) {
         }
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
             location.reload();
         } else {
-            alert(data.error || 'Erro ao remover conta');
+            await customAlert(data.error || 'Erro ao remover conta', 'Erro', 'error');
         }
     })
-    .catch(error => {
-        alert('Erro ao remover conta');
+    .catch(async error => {
+        await customAlert('Erro ao remover conta', 'Erro', 'error');
     });
 }
 
@@ -1018,15 +1019,15 @@ function toggleAccountStatus(accountId) {
         }
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
             location.reload();
         } else {
-            alert(data.error || 'Erro ao alterar status');
+            await customAlert(data.error || 'Erro ao alterar status', 'Erro', 'error');
         }
     })
-    .catch(error => {
-        alert('Erro ao alterar status');
+    .catch(async error => {
+        await customAlert('Erro ao alterar status', 'Erro', 'error');
     });
 }
 </script>

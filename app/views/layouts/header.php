@@ -282,6 +282,23 @@ $currentPath = $_SERVER['REQUEST_URI'];
     <!-- Mobile Overlay -->
     <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
 
+    <!-- Custom Modal -->
+    <div id="customModal" class="modal hidden">
+        <div class="modal-content max-w-md">
+            <div class="flex items-start space-x-4">
+                <div id="modalIcon" class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center">
+                    <i id="modalIconElement" class="text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 id="modalTitle" class="text-lg font-bold text-white mb-2"></h3>
+                    <p id="modalMessage" class="text-slate-300 whitespace-pre-line"></p>
+                </div>
+            </div>
+            <div id="modalButtons" class="flex justify-end space-x-3 mt-6">
+            </div>
+        </div>
+    </div>
+
     <!-- Sidebar -->
     <div id="sidebar" class="fixed inset-y-0 left-0 w-64 sidebar flex flex-col z-50">
         <!-- Logo -->
@@ -500,5 +517,113 @@ $currentPath = $_SERVER['REQUEST_URI'];
                             }
                         });
                     });
+                });
+
+                // Custom Modal Functions
+                function showCustomModal(options) {
+                    const modal = document.getElementById('customModal');
+                    const modalIcon = document.getElementById('modalIcon');
+                    const modalIconElement = document.getElementById('modalIconElement');
+                    const modalTitle = document.getElementById('modalTitle');
+                    const modalMessage = document.getElementById('modalMessage');
+                    const modalButtons = document.getElementById('modalButtons');
+
+                    modalTitle.textContent = options.title || 'Atenção';
+                    modalMessage.textContent = options.message || '';
+
+                    if (options.type === 'confirm') {
+                        modalIcon.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-orange-900 bg-opacity-30';
+                        modalIconElement.className = 'fas fa-question-circle text-2xl text-orange-400';
+                    } else if (options.type === 'success') {
+                        modalIcon.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-green-900 bg-opacity-30';
+                        modalIconElement.className = 'fas fa-check-circle text-2xl text-green-400';
+                    } else if (options.type === 'error') {
+                        modalIcon.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-red-900 bg-opacity-30';
+                        modalIconElement.className = 'fas fa-exclamation-circle text-2xl text-red-400';
+                    } else {
+                        modalIcon.className = 'flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-900 bg-opacity-30';
+                        modalIconElement.className = 'fas fa-info-circle text-2xl text-blue-400';
+                    }
+
+                    modalButtons.innerHTML = '';
+
+                    if (options.type === 'confirm') {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.textContent = options.cancelText || 'Cancelar';
+                        cancelBtn.className = 'px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition';
+                        cancelBtn.onclick = function() {
+                            closeCustomModal();
+                            if (options.onCancel) options.onCancel();
+                        };
+
+                        const confirmBtn = document.createElement('button');
+                        confirmBtn.textContent = options.confirmText || 'OK';
+                        confirmBtn.className = 'px-6 py-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-lg font-medium transition shadow-lg';
+                        confirmBtn.onclick = function() {
+                            closeCustomModal();
+                            if (options.onConfirm) options.onConfirm();
+                        };
+
+                        modalButtons.appendChild(cancelBtn);
+                        modalButtons.appendChild(confirmBtn);
+                    } else {
+                        const okBtn = document.createElement('button');
+                        okBtn.textContent = 'OK';
+                        okBtn.className = 'px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition shadow-lg';
+                        okBtn.onclick = function() {
+                            closeCustomModal();
+                            if (options.onClose) options.onClose();
+                        };
+                        modalButtons.appendChild(okBtn);
+                    }
+
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeCustomModal() {
+                    const modal = document.getElementById('customModal');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+
+                // Override native alert
+                window.customAlert = function(message, title = 'Atenção', type = 'info') {
+                    return new Promise((resolve) => {
+                        showCustomModal({
+                            title: title,
+                            message: message,
+                            type: type,
+                            onClose: resolve
+                        });
+                    });
+                };
+
+                // Override native confirm
+                window.customConfirm = function(message, title = 'Confirmação') {
+                    return new Promise((resolve) => {
+                        showCustomModal({
+                            title: title,
+                            message: message,
+                            type: 'confirm',
+                            onConfirm: () => resolve(true),
+                            onCancel: () => resolve(false)
+                        });
+                    });
+                };
+
+                // Close modal when clicking outside
+                document.addEventListener('click', function(e) {
+                    const modal = document.getElementById('customModal');
+                    if (e.target === modal) {
+                        closeCustomModal();
+                    }
+                });
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeCustomModal();
+                    }
                 });
             </script>

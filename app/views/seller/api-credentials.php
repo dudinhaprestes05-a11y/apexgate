@@ -69,11 +69,20 @@ unset($_SESSION['new_api_secret']);
         <p class="text-gray-600 text-sm mb-4">
             Se seu API Secret foi comprometido, você pode gerar um novo. O API Key permanecerá o mesmo, mas o secret antigo será invalidado imediatamente.
         </p>
-        <form method="POST" action="/seller/api-credentials/regenerate" onsubmit="return confirm('Tem certeza? O API Secret antigo será invalidado!')">
+        <form method="POST" action="/seller/api-credentials/regenerate" id="regenerateForm">
             <button type="submit" class="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition">
                 <i class="fas fa-sync-alt mr-2"></i>Regenerar API Secret
             </button>
         </form>
+        <script>
+            document.getElementById('regenerateForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const confirmed = await customConfirm('Tem certeza? O API Secret antigo será invalidado!', 'Confirmar Regeneração');
+                if (confirmed) {
+                    this.submit();
+                }
+            });
+        </script>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
