@@ -132,4 +132,138 @@ class Seller extends BaseModel {
 
         return $stmt->fetchAll();
     }
+
+    public function getIpWhitelist($sellerId) {
+        $seller = $this->find($sellerId);
+        if (!$seller) {
+            return [];
+        }
+
+        $whitelist = json_decode($seller['ip_whitelist'] ?? '[]', true);
+        return is_array($whitelist) ? $whitelist : [];
+    }
+
+    public function addIpToWhitelist($sellerId, $ip, $description = '') {
+        $whitelist = $this->getIpWhitelist($sellerId);
+
+        if (count($whitelist) >= 50) {
+            return ['success' => false, 'error' => 'Maximum limit of 50 IPs reached'];
+        }
+
+        foreach ($whitelist as $entry) {
+            if ($entry['ip'] === $ip) {
+                return ['success' => false, 'error' => 'IP already exists in whitelist'];
+            }
+        }
+
+        if (!$this->isValidIpOrCidr($ip)) {
+            return ['success' => false, 'error' => 'Invalid IP address or CIDR format'];
+        }
+
+        $whitelist[] = [
+            'ip' => $ip,
+            'description' => $description,
+            'added_at' => date('Y-m-d H:i:s')
+        ];
+
+        $this->update($sellerId, ['ip_whitelist' => json_encode($whitelist)]);
+
+        return ['success' => true, 'whitelist' => $whitelist];
+    }
+
+    public function removeIpFromWhitelist($sellerId, $ip) {
+        $whitelist = $this->getIpWhitelist($sellerId);
+
+        $whitelist = array_filter($whitelist, function($entry) use ($ip) {
+            return $entry['ip'] !== $ip;
+        });
+
+        $whitelist = array_values($whitelist);
+
+        $this->update($sellerId, ['ip_whitelist' => json_encode($whitelist)]);
+
+        return ['success' => true, 'whitelist' => $whitelist];
+    }
+
+    public function toggleIpWhitelist($sellerId, $enabled) {
+        $whitelist = $this->getIpWhitelist($sellerId);
+
+        if ($enabled && empty($whitelist)) {
+            return ['success' => false, 'error' => 'Cannot enable whitelist with no IPs configured'];
+        }
+
+        $this->update($sellerId, ['ip_whitelist_enabled' => $enabled ? 1 : 0]);
+
+        return ['success' => true, 'enabled' => $enabled];
+    }
+
+    public function isIpWhitelisted($sellerId, $clientIp) {
+        $seller = $this->find($sellerId);
+
+        if (!$seller) {
+            return false;
+        }
+
+        if (!$seller['ip_whitelist_enabled']) {
+            return true;
+        }
+
+        $whitelist = $this->getIpWhitelist($sellerId);
+
+        if (empty($whitelist)) {
+            return false;
+        }
+
+        foreach ($whitelist as $entry) {
+            if ($this->ipMatchesRule($clientIp, $entry['ip'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isValidIpOrCidr($ip) {
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return true;
+        }
+
+        if (strpos($ip, '/') !== false) {
+            list($subnet, $mask) = explode('/', $ip);
+
+            if (!filter_var($subnet, FILTER_VALIDATE_IP)) {
+                return false;
+            }
+
+            if (!is_numeric($mask) || $mask < 0 || $mask > 32) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function ipMatchesRule($clientIp, $rule) {
+        if ($clientIp === $rule) {
+            return true;
+        }
+
+        if (strpos($rule, '/') !== false) {
+            return $this->ipInCidr($clientIp, $rule);
+        }
+
+        return false;
+    }
+
+    private function ipInCidr($ip, $cidr) {
+        list($subnet, $mask) = explode('/', $cidr);
+
+        $ipLong = ip2long($ip);
+        $subnetLong = ip2long($subnet);
+        $maskLong = -1 << (32 - (int)$mask);
+
+        return ($ipLong & $maskLong) === ($subnetLong & $maskLong);
+    }
 }

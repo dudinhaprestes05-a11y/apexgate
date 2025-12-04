@@ -76,6 +76,19 @@ unset($_SESSION['new_api_secret']);
         </form>
     </div>
 
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">
+            <i class="fas fa-shield-alt mr-2"></i>Whitelist de IPs
+        </h2>
+        <p class="text-gray-600 text-sm mb-4">
+            Adicione uma camada extra de segurança restringindo o acesso à API apenas para IPs autorizados.
+            Quando ativada, somente requisições vindas dos IPs cadastrados serão aceitas.
+        </p>
+        <a href="/seller/ip-whitelist" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+            <i class="fas fa-cog mr-2"></i>Gerenciar Whitelist de IPs
+        </a>
+    </div>
+
     <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
         <h2 class="text-lg font-bold text-blue-900 mb-4">
             <i class="fas fa-book mr-2"></i>Documentação da API

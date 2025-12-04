@@ -111,6 +111,31 @@ try {
         $controller = new SellerController();
         $controller->updateWebhooks();
     }
+    elseif ($uri === '/seller/ip-whitelist') {
+        require_once __DIR__ . '/app/controllers/web/SellerController.php';
+        $controller = new SellerController();
+        $controller->ipWhitelist();
+    }
+    elseif ($uri === '/seller/ip-whitelist/get' && $method === 'GET') {
+        require_once __DIR__ . '/app/controllers/web/SellerController.php';
+        $controller = new SellerController();
+        $controller->getIpWhitelistJson();
+    }
+    elseif ($uri === '/seller/ip-whitelist/add' && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/SellerController.php';
+        $controller = new SellerController();
+        $controller->addIpToWhitelist();
+    }
+    elseif ($uri === '/seller/ip-whitelist/remove' && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/SellerController.php';
+        $controller = new SellerController();
+        $controller->removeIpFromWhitelist();
+    }
+    elseif ($uri === '/seller/ip-whitelist/toggle' && $method === 'POST') {
+        require_once __DIR__ . '/app/controllers/web/SellerController.php';
+        $controller = new SellerController();
+        $controller->toggleIpWhitelist();
+    }
     elseif ($uri === '/admin/dashboard') {
         require_once __DIR__ . '/app/controllers/web/AdminController.php';
         $controller = new AdminController();

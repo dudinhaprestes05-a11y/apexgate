@@ -253,4 +253,84 @@ class SellerController {
         header('Location: /seller/notifications');
         exit;
     }
+
+    public function ipWhitelist() {
+        $seller = $this->sellerModel->find($this->sellerId);
+        $whitelist = $this->sellerModel->getIpWhitelist($this->sellerId);
+        $clientIp = getClientIp();
+
+        require __DIR__ . '/../../views/seller/ip-whitelist.php';
+    }
+
+    public function getIpWhitelistJson() {
+        header('Content-Type: application/json');
+        $whitelist = $this->sellerModel->getIpWhitelist($this->sellerId);
+        $seller = $this->sellerModel->find($this->sellerId);
+
+        echo json_encode([
+            'success' => true,
+            'whitelist' => $whitelist,
+            'enabled' => (bool)$seller['ip_whitelist_enabled']
+        ]);
+        exit;
+    }
+
+    public function addIpToWhitelist() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $ip = trim($data['ip'] ?? '');
+        $description = trim($data['description'] ?? '');
+
+        if (empty($ip)) {
+            echo json_encode(['success' => false, 'error' => 'IP address is required']);
+            exit;
+        }
+
+        $result = $this->sellerModel->addIpToWhitelist($this->sellerId, $ip, $description);
+        echo json_encode($result);
+        exit;
+    }
+
+    public function removeIpFromWhitelist() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $ip = trim($data['ip'] ?? '');
+
+        if (empty($ip)) {
+            echo json_encode(['success' => false, 'error' => 'IP address is required']);
+            exit;
+        }
+
+        $result = $this->sellerModel->removeIpFromWhitelist($this->sellerId, $ip);
+        echo json_encode($result);
+        exit;
+    }
+
+    public function toggleIpWhitelist() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $enabled = isset($data['enabled']) ? (bool)$data['enabled'] : false;
+
+        $result = $this->sellerModel->toggleIpWhitelist($this->sellerId, $enabled);
+        echo json_encode($result);
+        exit;
+    }
 }

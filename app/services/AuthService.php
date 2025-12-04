@@ -58,7 +58,22 @@ class AuthService {
             errorResponse('Invalid credentials', 401);
         }
 
+        $this->validateIpWhitelist($seller);
+
         return $seller;
+    }
+
+    private function validateIpWhitelist($seller) {
+        $clientIp = getClientIp();
+
+        if (!$this->sellerModel->isIpWhitelisted($seller['id'], $clientIp)) {
+            $this->logModel->warning('auth', 'IP not whitelisted', [
+                'seller_id' => $seller['id'],
+                'ip' => $clientIp,
+                'whitelist_enabled' => $seller['ip_whitelist_enabled']
+            ]);
+            errorResponse('Access denied: IP address not authorized', 403);
+        }
     }
 
     private function getAuthFromHeaders() {
