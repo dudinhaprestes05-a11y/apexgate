@@ -313,6 +313,20 @@ class PixCashout extends BaseModel {
         return $stmt->fetchAll();
     }
 
+    public function getTotalFees() {
+        $sql = "
+            SELECT COALESCE(SUM(fee_amount), 0) as total
+            FROM {$this->table}
+            WHERE status = 'completed'
+        ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        $result = $stmt->fetch();
+        return $result['total'] ?? 0;
+    }
+
     public function getStats($dateFrom = null) {
         $params = [];
         $dateFilter = '';
@@ -326,6 +340,7 @@ class PixCashout extends BaseModel {
             SELECT
                 COUNT(*) as total_transactions,
                 COALESCE(SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END), 0) as total_volume,
+                COALESCE(SUM(CASE WHEN status = 'completed' THEN fee_amount ELSE 0 END), 0) as total_fees,
                 COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful_transactions,
                 COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_transactions,
                 COUNT(CASE WHEN status IN ('cancelled', 'failed') THEN 1 END) as failed_transactions,

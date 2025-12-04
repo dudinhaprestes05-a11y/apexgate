@@ -52,12 +52,25 @@ class AdminController {
     public function dashboard() {
         $dateFrom = date('Y-m-d', strtotime('-7 days'));
 
+        // Get platform revenue (fees collected)
+        $revenueStats = $this->cashinModel->getStats();
+        $platformRevenue = floatval($revenueStats['total_fees'] ?? 0);
+
+        // Calculate cashout fees
+        $cashoutRevenue = $this->cashoutModel->getTotalFees();
+
+        // Total platform revenue
+        $totalRevenue = $platformRevenue + floatval($cashoutRevenue);
+
         $stats = [
             'total_sellers' => $this->sellerModel->count(['status' => 'active']),
             'pending_sellers' => $this->sellerModel->count(['status' => 'pending']),
             'total_cashin' => $this->cashinModel->getTotalAmount(),
             'total_cashout' => $this->cashoutModel->getTotalAmount(),
             'pending_documents' => $this->documentModel->count(['status' => 'pending']),
+            'platform_revenue' => $totalRevenue,
+            'cashin_fees' => $platformRevenue,
+            'cashout_fees' => floatval($cashoutRevenue),
             'daily_cashin' => $this->cashinModel->getDailyStats($dateFrom),
             'daily_cashout' => []
         ];
@@ -755,7 +768,9 @@ class AdminController {
             'cashout' => $cashoutStats,
             'daily' => $dailyStats,
             'top_sellers' => $topSellers,
-            'total_revenue' => ($cashinStats['total_fees'] ?? 0),
+            'total_revenue' => ($cashinStats['total_fees'] ?? 0) + ($cashoutStats['total_fees'] ?? 0),
+            'cashin_fees' => ($cashinStats['total_fees'] ?? 0),
+            'cashout_fees' => ($cashoutStats['total_fees'] ?? 0),
             'total_transactions' => ($cashinStats['total_transactions'] ?? 0) + ($cashoutStats['total_transactions'] ?? 0),
             'total_volume' => ($cashinStats['total_volume'] ?? 0) + ($cashoutStats['total_volume'] ?? 0),
             'success_rate' => $this->calculateSuccessRate($cashinStats)

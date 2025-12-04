@@ -10,72 +10,73 @@ $periodLabels = [
 ?>
 
 <!-- Header -->
-<div class="flex items-center justify-between mb-8">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 gap-4">
     <div>
-        <h2 class="text-3xl font-bold text-white">Relatórios Financeiros</h2>
-        <p class="text-slate-400 mt-1">Análise de receitas e transações</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-white">Relatórios Financeiros</h2>
+        <p class="text-slate-400 mt-1 text-sm md:text-base">Análise de receitas e transações</p>
     </div>
-    <div class="flex items-center space-x-3">
-        <select onchange="window.location.href='/admin/reports?period=' + this.value" class="bg-slate-700 border-slate-600 text-white rounded-lg px-4 py-2.5">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <select onchange="window.location.href='/admin/reports?period=' + this.value" class="bg-slate-700 border-slate-600 text-white rounded-lg px-4 py-2.5 text-sm">
             <?php foreach ($periodLabels as $key => $label): ?>
                 <option value="<?= $key ?>" <?= $stats['period'] === $key ? 'selected' : '' ?>><?= $label ?></option>
             <?php endforeach; ?>
         </select>
-        <button onclick="window.print()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+        <button onclick="window.print()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm">
             <i class="fas fa-print mr-2"></i>Imprimir
         </button>
     </div>
 </div>
 
 <!-- Summary Cards -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="stat-icon w-12 h-12 rounded-xl flex items-center justify-center">
-                <i class="fas fa-dollar-sign text-white text-xl"></i>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="stat-icon w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center">
+                <i class="fas fa-dollar-sign text-white text-base md:text-xl"></i>
             </div>
         </div>
-        <p class="text-slate-400 text-sm mb-1">Receita Total</p>
-        <p class="text-3xl font-bold text-white">R$ <?= number_format($stats['total_revenue'], 2, ',', '.') ?></p>
-        <p class="text-xs text-slate-400 mt-2">
-            <i class="fas fa-info-circle mr-1"></i>Taxas do período
-        </p>
+        <p class="text-slate-400 text-xs md:text-sm mb-1">Receita Total</p>
+        <p class="text-2xl md:text-3xl font-bold text-white">R$ <?= number_format($stats['total_revenue'], 2, ',', '.') ?></p>
+        <div class="flex flex-col gap-1 mt-2 text-xs text-slate-400">
+            <span><i class="fas fa-arrow-down mr-1"></i>Cash-in: R$ <?= number_format($stats['cashin_fees'], 2, ',', '.') ?></span>
+            <span><i class="fas fa-arrow-up mr-1"></i>Cash-out: R$ <?= number_format($stats['cashout_fees'], 2, ',', '.') ?></span>
+        </div>
     </div>
 
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600">
-                <i class="fas fa-exchange-alt text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600">
+                <i class="fas fa-exchange-alt text-white text-base md:text-xl"></i>
             </div>
         </div>
-        <p class="text-slate-400 text-sm mb-1">Total Transações</p>
-        <p class="text-3xl font-bold text-white"><?= number_format($stats['total_transactions'], 0, ',', '.') ?></p>
+        <p class="text-slate-400 text-xs md:text-sm mb-1">Total Transações</p>
+        <p class="text-2xl md:text-3xl font-bold text-white"><?= number_format($stats['total_transactions'], 0, ',', '.') ?></p>
         <p class="text-xs text-slate-400 mt-2">
             <i class="fas fa-info-circle mr-1"></i>Cash-in + Cash-out
         </p>
     </div>
 
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600">
-                <i class="fas fa-chart-line text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600">
+                <i class="fas fa-chart-line text-white text-base md:text-xl"></i>
             </div>
         </div>
-        <p class="text-slate-400 text-sm mb-1">Volume Total</p>
-        <p class="text-3xl font-bold text-white">R$ <?= number_format($stats['total_volume'], 2, ',', '.') ?></p>
+        <p class="text-slate-400 text-xs md:text-sm mb-1">Volume Total</p>
+        <p class="text-2xl md:text-3xl font-bold text-white">R$ <?= number_format($stats['total_volume'], 2, ',', '.') ?></p>
         <p class="text-xs text-slate-400 mt-2">
             <i class="fas fa-info-circle mr-1"></i>Volume processado
         </p>
     </div>
 
-    <div class="card p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600">
-                <i class="fas fa-store text-white text-xl"></i>
+    <div class="card p-4 md:p-6">
+        <div class="flex items-center justify-between mb-3 md:mb-4">
+            <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600">
+                <i class="fas fa-store text-white text-base md:text-xl"></i>
             </div>
         </div>
-        <p class="text-slate-400 text-sm mb-1">Sellers Ativos</p>
-        <p class="text-3xl font-bold text-white"><?= $stats['total_sellers'] ?></p>
+        <p class="text-slate-400 text-xs md:text-sm mb-1">Sellers Ativos</p>
+        <p class="text-2xl md:text-3xl font-bold text-white"><?= $stats['total_sellers'] ?></p>
         <p class="text-xs text-slate-400 mt-2">
             <i class="fas fa-check-circle mr-1"></i>Atualmente ativos
         </p>

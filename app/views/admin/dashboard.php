@@ -3,6 +3,42 @@ $pageTitle = 'Dashboard';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 
+<!-- Revenue Card (Destacado) -->
+<div class="mb-6 md:mb-8">
+    <div class="card p-6 md:p-8 bg-gradient-to-br from-emerald-600 to-teal-700 border-2 border-emerald-400">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 md:w-20 md:h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-coins text-white text-3xl md:text-4xl"></i>
+                </div>
+                <div>
+                    <p class="text-emerald-100 text-sm md:text-base mb-2 font-medium">
+                        <i class="fas fa-chart-line mr-2"></i>Faturamento Total da Plataforma
+                    </p>
+                    <p class="text-4xl md:text-5xl font-bold text-white mb-2">
+                        R$ <?= number_format($stats['platform_revenue'], 2, ',', '.') ?>
+                    </p>
+                    <div class="flex flex-wrap gap-4 text-emerald-100 text-xs md:text-sm">
+                        <span>
+                            <i class="fas fa-arrow-down mr-1"></i>
+                            Cash-in: R$ <?= number_format($stats['cashin_fees'], 2, ',', '.') ?>
+                        </span>
+                        <span>
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            Cash-out: R$ <?= number_format($stats['cashout_fees'], 2, ',', '.') ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="px-4 py-2 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg text-white text-sm font-medium">
+                    <i class="fas fa-percentage mr-2"></i>Taxas Cobradas
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
     <!-- Sellers Ativos -->
