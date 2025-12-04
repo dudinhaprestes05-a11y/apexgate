@@ -117,17 +117,19 @@ class MigrationRollback {
 
             $this->log('Restored columns: client_id, client_secret, merchant_id');
 
-            // Restore credentials from system_settings if available
-            $settings = $this->db->query("
-                SELECT `key`, `value`
-                FROM system_settings
-                WHERE `key` IN ('podpay_client_id', 'podpay_client_secret', 'podpay_merchant_id')
-            ")->fetchAll(PDO::FETCH_KEY_PAIR);
+            // Get credentials from acquirer_accounts if available (before rollback)
+            $account = $this->db->query("
+                SELECT client_id, client_secret, merchant_id
+                FROM acquirer_accounts
+                WHERE acquirer_id = (SELECT id FROM acquirers WHERE code = 'podpay' LIMIT 1)
+                  AND is_default = 1
+                LIMIT 1
+            ")->fetch(PDO::FETCH_ASSOC);
 
-            if (!empty($settings)) {
-                $clientId = $settings['podpay_client_id'] ?? '';
-                $clientSecret = $settings['podpay_client_secret'] ?? '';
-                $merchantId = $settings['podpay_merchant_id'] ?? '';
+            if ($account) {
+                $clientId = $account['client_id'] ?? '';
+                $clientSecret = $account['client_secret'] ?? '';
+                $merchantId = $account['merchant_id'] ?? '';
 
                 if (!empty($clientId)) {
                     $stmt = $this->db->prepare("

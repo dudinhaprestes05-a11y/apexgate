@@ -163,23 +163,9 @@ class MigrationStatusChecker {
 
         echo "\n";
 
-        // Check 5: Old settings
+        // Check 5: Old settings (SKIPPED - credentials now stored in acquirers table)
         echo "6. Checking old PodPay settings... ";
-        $oldSettings = $this->db->query("
-            SELECT `key`, SUBSTRING(`value`, 1, 20) as value_preview
-            FROM system_settings
-            WHERE `key` IN ('podpay_client_id', 'podpay_client_secret', 'podpay_merchant_id', 'podpay_api_key', 'podpay_api_secret')
-        ")->fetchAll(PDO::FETCH_ASSOC);
-
-        if (!empty($oldSettings)) {
-            echo "FOUND\n";
-            foreach ($oldSettings as $setting) {
-                echo "   - {$setting['key']}: {$setting['value_preview']}...\n";
-            }
-            echo "   ⚠ These can be removed after confirming migration works\n";
-        } else {
-            echo "✓ CLEANED\n";
-        }
+        echo "✓ N/A (credentials stored in acquirers table)\n";
 
         echo "\n";
 

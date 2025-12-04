@@ -48,21 +48,32 @@ class PreMigrationChecker {
     }
 
     private function checkPodPayCredentials() {
-        $settings = $this->db->query("
-            SELECT `key`, `value`
-            FROM system_settings
-            WHERE `key` IN ('podpay_client_id', 'podpay_client_secret', 'podpay_merchant_id', 'podpay_api_key', 'podpay_api_secret')
-        ")->fetchAll(PDO::FETCH_KEY_PAIR);
+        $acquirer = $this->db->query("
+            SELECT api_key, api_secret, config
+            FROM acquirers
+            WHERE code = 'podpay' LIMIT 1
+        ")->fetch(PDO::FETCH_ASSOC);
 
-        $clientId = $settings['podpay_client_id'] ?? $settings['podpay_api_key'] ?? '';
-        $clientSecret = $settings['podpay_client_secret'] ?? $settings['podpay_api_secret'] ?? '';
-        $merchantId = $settings['podpay_merchant_id'] ?? '';
-
-        if (empty($clientId) || empty($clientSecret)) {
+        if (!$acquirer) {
             $this->addCheck(
                 'PodPay Credentials',
                 false,
-                'No credentials found in system_settings. Configure PodPay first.',
+                'PodPay acquirer not found. Run sql/configure_podpay.sql first.',
+                'error'
+            );
+            return false;
+        }
+
+        $apiKey = $acquirer['api_key'] ?? '';
+        $apiSecret = $acquirer['api_secret'] ?? '';
+
+        if (empty($apiKey) || empty($apiSecret) ||
+            $apiKey === 'COLE_AQUI_SUA_API_KEY' ||
+            $apiSecret === 'COLE_AQUI_SEU_API_SECRET') {
+            $this->addCheck(
+                'PodPay Credentials',
+                false,
+                'PodPay credentials not configured. Update acquirers table with real credentials.',
                 'error'
             );
             return false;
@@ -71,7 +82,7 @@ class PreMigrationChecker {
         $this->addCheck(
             'PodPay Credentials',
             true,
-            'Found: client_id=' . substr($clientId, 0, 10) . '..., merchant_id=' . $merchantId,
+            'Found: api_key=' . substr($apiKey, 0, 10) . '...',
             'success'
         );
         return true;

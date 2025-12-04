@@ -75,35 +75,30 @@ class MultiAccountMigration {
 
         $config = [];
 
-        // Check system_settings table
-        $settings = $this->db->query("
-            SELECT `key`, `value`
-            FROM system_settings
-            WHERE `key` IN ('podpay_client_id', 'podpay_client_secret', 'podpay_merchant_id', 'podpay_api_key', 'podpay_api_secret')
-        ")->fetchAll(PDO::FETCH_KEY_PAIR);
-
-        $config['client_id'] = $settings['podpay_client_id'] ?? $settings['podpay_api_key'] ?? '';
-        $config['client_secret'] = $settings['podpay_client_secret'] ?? $settings['podpay_api_secret'] ?? '';
-        $config['merchant_id'] = $settings['podpay_merchant_id'] ?? '';
-
-        // Check if acquirers table still has credentials (before migration)
+        // Get credentials from acquirers table
         $acquirer = $this->db->query("
-            SELECT client_id, client_secret, merchant_id, api_key, api_secret
+            SELECT api_key, api_secret, config
             FROM acquirers
             WHERE code = 'podpay'
             LIMIT 1
         ")->fetch(PDO::FETCH_ASSOC);
 
         if ($acquirer) {
-            // Use acquirer table data if available (fallback)
-            $config['client_id'] = $config['client_id'] ?: ($acquirer['client_id'] ?? $acquirer['api_key'] ?? '');
-            $config['client_secret'] = $config['client_secret'] ?: ($acquirer['client_secret'] ?? $acquirer['api_secret'] ?? '');
-            $config['merchant_id'] = $config['merchant_id'] ?: ($acquirer['merchant_id'] ?? '');
+            $config['client_id'] = $acquirer['api_key'] ?? '';
+            $config['client_secret'] = $acquirer['api_secret'] ?? '';
+
+            // Try to get merchant_id from config JSON if available
+            if (!empty($acquirer['config'])) {
+                $configJson = json_decode($acquirer['config'], true);
+                $config['merchant_id'] = $configJson['merchant_id'] ?? '';
+            } else {
+                $config['merchant_id'] = '';
+            }
         }
 
         $this->log("Retrieved configuration: " . json_encode([
-            'client_id' => substr($config['client_id'], 0, 10) . '...',
-            'merchant_id' => $config['merchant_id']
+            'client_id' => substr($config['client_id'] ?? '', 0, 10) . '...',
+            'merchant_id' => $config['merchant_id'] ?? ''
         ]));
 
         if (empty($config['client_id']) || empty($config['client_secret'])) {
