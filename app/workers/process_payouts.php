@@ -52,7 +52,10 @@ try {
                     'new_status' => $status
                 ]);
 
-                if (($status === 'completed' || $status === 'paid') && $oldStatus !== $status) {
+                $statusLower = strtolower($status);
+                $oldStatusLower = strtolower($oldStatus);
+
+                if (($statusLower === 'completed' || $statusLower === 'paid') && $oldStatusLower !== $statusLower) {
                     $updatedPayout = $pixCashoutModel->findByTransactionId($payout['transaction_id']);
 
                     if ($updatedPayout) {
