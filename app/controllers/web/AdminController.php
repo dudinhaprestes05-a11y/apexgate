@@ -1307,7 +1307,7 @@ class AdminController {
             FROM acquirer_accounts aa
             LEFT JOIN pix_cashin pc ON pc.acquirer_account_id = aa.id
                 AND pc.created_at >= CURRENT_DATE
-            WHERE aa.is_active = true
+            WHERE aa.is_active = 1
             GROUP BY aa.id, aa.name, aa.is_active, aa.balance
             ORDER BY total_volume DESC
             LIMIT 6

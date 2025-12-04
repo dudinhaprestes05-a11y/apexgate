@@ -19,7 +19,7 @@ class AcquirerAccount extends BaseModel {
     public function getAccountWithAcquirer($accountId) {
         $sql = "
             SELECT aa.*, a.name as acquirer_name, a.code as acquirer_code,
-                   a.base_url, a.supports_cashin, a.supports_cashout
+                   a.api_url as base_url
             FROM acquirer_accounts aa
             JOIN acquirers a ON a.id = aa.acquirer_id
             WHERE aa.id = ?
@@ -32,25 +32,19 @@ class AcquirerAccount extends BaseModel {
     public function getAccountsBySeller($sellerId, $transactionType = null) {
         $sql = "
             SELECT aa.*, a.name as acquirer_name, a.code as acquirer_code,
-                   a.base_url, saa.priority, saa.distribution_strategy,
+                   a.api_url as base_url, saa.priority, saa.distribution_strategy,
                    saa.percentage_allocation, saa.total_transactions,
                    saa.total_volume, saa.last_used_at
             FROM seller_acquirer_accounts saa
             JOIN acquirer_accounts aa ON aa.id = saa.acquirer_account_id
             JOIN acquirers a ON a.id = aa.acquirer_id
             WHERE saa.seller_id = ?
-                AND saa.is_active = true
-                AND aa.is_active = true
-                AND a.is_active = true
+                AND saa.is_active = 1
+                AND aa.is_active = 1
+                AND a.status = 'active'
         ";
 
         $params = [$sellerId];
-
-        if ($transactionType === 'cashin') {
-            $sql .= " AND a.supports_cashin = true";
-        } elseif ($transactionType === 'cashout') {
-            $sql .= " AND a.supports_cashout = true";
-        }
 
         $sql .= " ORDER BY saa.priority ASC, saa.last_used_at ASC";
 
@@ -60,24 +54,18 @@ class AcquirerAccount extends BaseModel {
     public function getNextAccountForSeller($sellerId, $transactionType = 'cashin', $excludeAccountIds = []) {
         $sql = "
             SELECT aa.*, a.name as acquirer_name, a.code as acquirer_code,
-                   a.base_url, saa.priority, saa.distribution_strategy,
+                   a.api_url as base_url, saa.priority, saa.distribution_strategy,
                    saa.percentage_allocation, saa.total_transactions
             FROM seller_acquirer_accounts saa
             JOIN acquirer_accounts aa ON aa.id = saa.acquirer_account_id
             JOIN acquirers a ON a.id = aa.acquirer_id
             WHERE saa.seller_id = ?
-                AND saa.is_active = true
-                AND aa.is_active = true
-                AND a.is_active = true
+                AND saa.is_active = 1
+                AND aa.is_active = 1
+                AND a.status = 'active'
         ";
 
         $params = [$sellerId];
-
-        if ($transactionType === 'cashin') {
-            $sql .= " AND a.supports_cashin = true";
-        } elseif ($transactionType === 'cashout') {
-            $sql .= " AND a.supports_cashout = true";
-        }
 
         if (!empty($excludeAccountIds)) {
             $placeholders = implode(',', array_fill(0, count($excludeAccountIds), '?'));
@@ -182,7 +170,7 @@ class AcquirerAccount extends BaseModel {
 
     public function unsetDefaultForAcquirer($acquirerId) {
         return $this->execute(
-            "UPDATE acquirer_accounts SET is_default = false, updated_at = NOW() WHERE acquirer_id = ?",
+            "UPDATE acquirer_accounts SET is_default = 0, updated_at = NOW() WHERE acquirer_id = ?",
             [$acquirerId]
         );
     }
