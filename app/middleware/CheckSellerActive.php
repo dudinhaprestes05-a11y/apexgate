@@ -29,8 +29,15 @@ class CheckSellerActive {
         }
 
         if ($seller['status'] === 'pending') {
-            if (!in_array($_SERVER['REQUEST_URI'], ['/seller/documents', '/seller/profile', '/logout'])) {
-                header('Location: /seller/documents');
+            $allowedUris = ['/seller/documents', '/seller/personal-info', '/seller/personal-info/save', '/seller/profile', '/logout'];
+            $currentUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+            if (!in_array($currentUri, $allowedUris)) {
+                if (!$seller['personal_info_completed']) {
+                    header('Location: /seller/personal-info');
+                } else {
+                    header('Location: /seller/documents');
+                }
                 exit;
             }
         }
