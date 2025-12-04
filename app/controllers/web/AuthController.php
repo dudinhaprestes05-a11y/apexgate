@@ -39,6 +39,20 @@ class AuthController {
             exit;
         }
 
+        $turnstileToken = $_POST['cf-turnstile-response'] ?? '';
+
+        if (empty($turnstileToken)) {
+            $_SESSION['error'] = 'Por favor, complete a verificação de segurança';
+            header('Location: /login');
+            exit;
+        }
+
+        if (!$this->verifyTurnstile($turnstileToken)) {
+            $_SESSION['error'] = 'Falha na verificação de segurança. Tente novamente.';
+            header('Location: /login');
+            exit;
+        }
+
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
@@ -85,6 +99,22 @@ class AuthController {
 
     public function register() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /register');
+            exit;
+        }
+
+        $turnstileToken = $_POST['cf-turnstile-response'] ?? '';
+
+        if (empty($turnstileToken)) {
+            $_SESSION['error'] = 'Por favor, complete a verificação de segurança';
+            $_SESSION['old_data'] = $_POST;
+            header('Location: /register');
+            exit;
+        }
+
+        if (!$this->verifyTurnstile($turnstileToken)) {
+            $_SESSION['error'] = 'Falha na verificação de segurança. Tente novamente.';
+            $_SESSION['old_data'] = $_POST;
             header('Location: /register');
             exit;
         }
@@ -229,5 +259,39 @@ class AuthController {
             header('Location: /seller/dashboard');
         }
         exit;
+    }
+
+    private function verifyTurnstile($token) {
+        $secretKey = $_ENV['TURNSTILE_SECRET_KEY'] ?? '';
+
+        if (empty($secretKey)) {
+            return false;
+        }
+
+        $clientIp = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        $data = [
+            'secret' => $secretKey,
+            'response' => $token,
+            'remoteip' => $clientIp
+        ];
+
+        $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200 || !$response) {
+            return false;
+        }
+
+        $result = json_decode($response, true);
+
+        return isset($result['success']) && $result['success'] === true;
     }
 }

@@ -10,6 +10,7 @@ unset($_SESSION['old_data']);
     <title>Cadastro - Gateway PIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-2xl">
@@ -122,8 +123,12 @@ unset($_SESSION['old_data']);
                     </div>
                 </div>
 
-                <button type="submit"
-                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                <div class="flex justify-center">
+                    <div class="cf-turnstile" data-sitekey="<?= $_ENV['TURNSTILE_SITE_KEY'] ?? '' ?>"></div>
+                </div>
+
+                <button type="submit" id="registerBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-user-plus mr-2"></i>Criar Conta
                 </button>
             </form>
@@ -150,6 +155,17 @@ unset($_SESSION['old_data']);
         document.addEventListener('DOMContentLoaded', () => {
             const personType = document.querySelector('[name="person_type"]').value;
             if (personType) togglePersonType(personType);
+
+            const registerForm = document.querySelector('form');
+            registerForm.addEventListener('submit', function(e) {
+                const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
+
+                if (!turnstileResponse || !turnstileResponse.value) {
+                    e.preventDefault();
+                    alert('Por favor, complete a verificação de segurança.');
+                    return false;
+                }
+            });
         });
     </script>
 </body>

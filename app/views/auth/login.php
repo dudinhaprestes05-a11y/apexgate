@@ -6,6 +6,7 @@
     <title>Login - Gateway PIX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md">
@@ -57,8 +58,12 @@
                     </div>
                 </div>
 
-                <button type="submit"
-                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 md:py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm md:text-base">
+                <div class="flex justify-center">
+                    <div class="cf-turnstile" data-sitekey="<?= $_ENV['TURNSTILE_SITE_KEY'] ?? '' ?>"></div>
+                </div>
+
+                <button type="submit" id="loginBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 md:py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-sign-in-alt mr-2"></i>Entrar
                 </button>
             </form>
@@ -75,5 +80,20 @@
             &copy; <?= date('Y') ?> Gateway PIX. Todos os direitos reservados.
         </p>
     </div>
+
+    <script>
+        const loginForm = document.querySelector('form');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginForm.addEventListener('submit', function(e) {
+            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
+
+            if (!turnstileResponse || !turnstileResponse.value) {
+                e.preventDefault();
+                alert('Por favor, complete a verificação de segurança.');
+                return false;
+            }
+        });
+    </script>
 </body>
 </html>
