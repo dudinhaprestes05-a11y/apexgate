@@ -133,22 +133,22 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 pt-4 border-t border-gray-200">
-                <button onclick="viewAccountDetails(<?= $account['id'] ?>)" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:flex lg:items-center gap-2 pt-4 border-t border-gray-200">
+                <button onclick="viewAccountDetails(<?= $account['id'] ?>)" class="lg:flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 md:px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm">
                     <i class="fas fa-eye"></i>
-                    Detalhes
+                    <span class="hidden sm:inline">Detalhes</span>
                 </button>
-                <button onclick="editAccount(<?= $account['id'] ?>)" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                <button onclick="editAccount(<?= $account['id'] ?>)" class="lg:flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 md:px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm">
                     <i class="fas fa-edit"></i>
-                    Editar
+                    <span class="hidden sm:inline">Editar</span>
                 </button>
-                <button onclick="toggleAccount(<?= $account['id'] ?>, <?= $account['is_active'] ? 'false' : 'true' ?>)" class="flex-1 <?= $account['is_active'] ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700' ?> px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2">
+                <button onclick="toggleAccount(<?= $account['id'] ?>, <?= $account['is_active'] ? 'false' : 'true' ?>)" class="lg:flex-1 <?= $account['is_active'] ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700' ?> px-3 md:px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm">
                     <i class="fas fa-power-off"></i>
-                    <?= $account['is_active'] ? 'Desativar' : 'Ativar' ?>
+                    <span class="hidden sm:inline"><?= $account['is_active'] ? 'Desativar' : 'Ativar' ?></span>
                 </button>
-                <button onclick="resetDailyLimit(<?= $account['id'] ?>)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 px-4 py-2 rounded-lg font-medium transition flex items-center gap-2">
+                <button onclick="resetDailyLimit(<?= $account['id'] ?>)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 md:px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-1 md:gap-2 text-xs md:text-sm">
                     <i class="fas fa-redo"></i>
-                    Reset
+                    <span class="hidden md:inline">Reset</span>
                 </button>
             </div>
         </div>
