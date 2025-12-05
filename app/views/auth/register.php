@@ -98,14 +98,14 @@ unset($_SESSION['old_data']);
         }
     </style>
 </head>
-<body class="flex justify-center p-4 py-12 relative overflow-hidden">
+<body class="p-4 py-12 relative">
 
     <!-- Background Particles -->
     <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500 rounded-full opacity-10 blur-3xl particle floating"></div>
     <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500 rounded-full opacity-10 blur-3xl particle floating" style="animation-delay: 1s;"></div>
     <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-indigo-500 rounded-full opacity-10 blur-3xl particle floating" style="animation-delay: 2s;"></div>
 
-    <div class="w-full max-w-3xl z-10 fade-in">
+    <div class="w-full max-w-3xl mx-auto z-10 fade-in">
         <!-- Back to Home Link -->
         <div class="mb-6 text-center">
             <a href="/" class="inline-flex items-center text-gray-400 hover:text-blue-400 transition text-sm">
