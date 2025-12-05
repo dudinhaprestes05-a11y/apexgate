@@ -497,12 +497,12 @@
                             Suporte 24/7
                         </li>
                         <li class="flex items-center text-gray-300">
-                            <i class="fas fa-star text-yellow-400 mr-3"></i>
-                            <span class="text-yellow-400 font-semibold">Taxas customizadas</span>
+                            <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                            Taxas customizadas
                         </li>
                         <li class="flex items-center text-gray-300">
-                            <i class="fas fa-star text-yellow-400 mr-3"></i>
-                            <span class="text-yellow-400 font-semibold">Gerente dedicado</span>
+                            <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                            Gerente dedicado
                         </li>
                     </ul>
                     <a href="/register" class="btn-secondary w-full px-6 py-3 rounded-xl text-white font-semibold text-center block">
