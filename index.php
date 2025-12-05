@@ -401,8 +401,9 @@ try {
         $controller->receiveFromAcquirer();
     }
     elseif ($uri === '/' || $uri === '') {
-        header('Location: /login');
-        exit;
+        require_once __DIR__ . '/app/controllers/web/AuthController.php';
+        $controller = new AuthController();
+        $controller->home();
     }
     else {
         http_response_code(404);

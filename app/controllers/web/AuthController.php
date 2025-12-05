@@ -19,6 +19,13 @@ class AuthController {
         $this->notificationService = new NotificationService();
     }
 
+    public function home() {
+        if (isset($_SESSION['user_id'])) {
+            $this->redirectToDashboard();
+        }
+        require __DIR__ . '/../../views/landing/home.php';
+    }
+
     public function showLogin() {
         if (isset($_SESSION['user_id'])) {
             $this->redirectToDashboard();

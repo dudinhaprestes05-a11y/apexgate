@@ -7,75 +7,177 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .input-field {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .logo-glow {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-        <div class="text-center mb-6 md:mb-8">
-            <div class="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl mb-4 shadow-lg">
-                <i class="fas fa-bolt text-white text-xl md:text-2xl"></i>
-            </div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><?= APP_NAME ?></h1>
-            <p class="text-sm md:text-base text-gray-600 mt-2">Entre na sua conta</p>
+<body class="flex items-center justify-center p-4 relative overflow-hidden">
+
+    <!-- Background Particles -->
+    <div class="absolute top-20 left-20 w-32 h-32 bg-blue-500 rounded-full opacity-10 blur-3xl particle floating"></div>
+    <div class="absolute bottom-20 right-20 w-40 h-40 bg-purple-500 rounded-full opacity-10 blur-3xl particle floating" style="animation-delay: 1s;"></div>
+    <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-indigo-500 rounded-full opacity-10 blur-3xl particle floating" style="animation-delay: 2s;"></div>
+
+    <div class="w-full max-w-md z-10 fade-in">
+        <!-- Back to Home Link -->
+        <div class="mb-6 text-center">
+            <a href="/" class="inline-flex items-center text-gray-400 hover:text-blue-400 transition text-sm">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Voltar para o início
+            </a>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl mb-4 logo-glow">
+                <i class="fas fa-bolt text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2"><?= APP_NAME ?></h1>
+            <p class="text-gray-400">Entre na sua conta</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-card rounded-2xl p-8 shadow-2xl">
             <?php if (isset($_SESSION['error'])): ?>
-            <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div class="mb-6 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 text-red-400 px-4 py-3 rounded-lg">
                 <i class="fas fa-exclamation-circle mr-2"></i>
                 <?= htmlspecialchars($_SESSION['error']) ?>
             </div>
             <?php unset($_SESSION['error']); endif; ?>
 
             <?php if (isset($_SESSION['success'])): ?>
-            <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            <div class="mb-6 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 text-green-400 px-4 py-3 rounded-lg">
                 <i class="fas fa-check-circle mr-2"></i>
                 <?= htmlspecialchars($_SESSION['success']) ?>
             </div>
             <?php unset($_SESSION['success']); endif; ?>
 
-            <form method="POST" action="/login" class="space-y-4 md:space-y-5">
+            <form method="POST" action="/login" class="space-y-6">
+                <!-- Email Field -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-envelope text-gray-400 text-sm"></i>
-                        </div>
-                        <input type="email" name="email" required
-                               class="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm md:text-base"
-                               placeholder="seu@email.com">
-                    </div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-2 text-blue-400"></i>Email
+                    </label>
+                    <input type="email"
+                           name="email"
+                           required
+                           class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
+                           placeholder="seu@email.com"
+                           autocomplete="email">
                 </div>
 
+                <!-- Password Field -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-lock text-gray-400 text-sm"></i>
-                        </div>
-                        <input type="password" name="password" required
-                               class="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm md:text-base"
-                               placeholder="••••••••">
-                    </div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-lock mr-2 text-blue-400"></i>Senha
+                    </label>
+                    <input type="password"
+                           name="password"
+                           required
+                           class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
+                           placeholder="••••••••"
+                           autocomplete="current-password">
                 </div>
 
-                <div class="flex justify-center">
+                <!-- Turnstile -->
+                <div class="flex justify-center py-2">
                     <div class="cf-turnstile" data-sitekey="<?= $_ENV['TURNSTILE_SITE_KEY'] ?? '' ?>"></div>
                 </div>
 
-                <button type="submit" id="loginBtn"
-                        class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 md:py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed">
+                <!-- Submit Button -->
+                <button type="submit"
+                        id="loginBtn"
+                        class="btn-primary w-full py-3.5 rounded-lg text-white font-semibold text-base disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-sign-in-alt mr-2"></i>Entrar
                 </button>
             </form>
 
+            <!-- Register Link -->
             <div class="mt-6 text-center">
-                <p class="text-gray-600 text-sm">
+                <p class="text-gray-400 text-sm">
                     Não tem uma conta?
-                    <a href="/register" class="text-blue-600 hover:text-blue-700 font-medium">Cadastre-se</a>
+                    <a href="/register" class="text-blue-400 hover:text-blue-300 font-semibold transition">
+                        Cadastre-se gratuitamente
+                    </a>
                 </p>
             </div>
         </div>
 
+        <!-- Footer -->
         <p class="text-center text-gray-500 text-sm mt-8">
             &copy; <?= date('Y') ?> <?= APP_NAME ?>. Todos os direitos reservados.
         </p>
@@ -90,9 +192,20 @@
 
             if (!turnstileResponse || !turnstileResponse.value) {
                 e.preventDefault();
-                await customAlert('Por favor, complete a verificação de segurança.', 'Atenção', 'info');
+                alert('Por favor, complete a verificação de segurança.');
                 return false;
             }
+        });
+
+        // Add focus glow effect
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.2)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.style.boxShadow = 'none';
+            });
         });
     </script>
 </body>
