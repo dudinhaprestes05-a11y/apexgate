@@ -413,9 +413,9 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="glass-card pricing-card p-8 rounded-2xl border-2 border-blue-500 relative">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <span class="px-4 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold">
+                <div class="glass-card pricing-card p-8 pt-12 rounded-2xl border-2 border-blue-500 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                        <span class="px-4 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold whitespace-nowrap">
                             Padrão
                         </span>
                     </div>
@@ -454,7 +454,7 @@
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Suporte técnico
+                            Suporte 24/7
                         </li>
                     </ul>
                     <a href="/register" class="btn-primary w-full px-6 py-3 rounded-xl text-white font-semibold text-center block">
@@ -474,27 +474,35 @@
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Todos os recursos
+                            API RESTful completa
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Taxas customizadas
+                            Dashboard completo
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Gerente de conta dedicado
+                            Webhooks em tempo real
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            SLA garantido
+                            Relatórios detalhados
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Integrações personalizadas
+                            Split de pagamentos
                         </li>
                         <li class="flex items-center text-gray-300">
                             <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                            Suporte prioritário 24/7
+                            Suporte 24/7
+                        </li>
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-star text-yellow-400 mr-3"></i>
+                            <span class="text-yellow-400 font-semibold">Taxas customizadas</span>
+                        </li>
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-star text-yellow-400 mr-3"></i>
+                            <span class="text-yellow-400 font-semibold">Gerente dedicado</span>
                         </li>
                     </ul>
                     <a href="/register" class="btn-secondary w-full px-6 py-3 rounded-xl text-white font-semibold text-center block">
