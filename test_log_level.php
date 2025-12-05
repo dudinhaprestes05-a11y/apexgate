@@ -32,7 +32,7 @@ echo "5. CRITICAL log: " . ($criticalResult ? "✓ Salvo (esperado)" : "✗ Igno
 
 echo "\n=== Verificando logs salvos no banco ===\n\n";
 
-$db = new Database();
+$db = Database::getInstance();
 $conn = $db->getConnection();
 
 $stmt = $conn->prepare("SELECT level, message, created_at FROM logs WHERE message LIKE ? ORDER BY created_at DESC LIMIT 10");
